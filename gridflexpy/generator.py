@@ -7,7 +7,7 @@ def add_gd(Generator):
     Function to write a comand that will modify the power of the generator during the power flow simulation.
     """
     name = Generator.id
-    bus = Generator.bus_node
+    bus = str(Generator.bus_node).zfill(3)
     phases = Generator.phases
     kV = Generator.kV
     Conn = Generator.Conn
@@ -15,7 +15,7 @@ def add_gd(Generator):
     Pf = Generator.Pf
     model = Generator.Model
 
-    new_gd = f"New Generator.{name} bus1={bus} Phases={phases} kV={kV} Conn={Conn} kW={kW} Pf={Pf} Model={model}"
+    new_gd = f"New Generator.Gen_{name}_bus_{bus} bus1=bus_{bus} Phases={phases} kV={kV} Conn={Conn} kW={kW} Pf={Pf} Model={model}"
 
     return new_gd
 

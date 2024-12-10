@@ -9,7 +9,7 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
     time_range = pd.date_range(date_ini, date_end, freq=str(step) + 'T')
 
     for timestep in time_range:
-        print(f"\n\nTimestep: {timestep}")
+        print(f"\nTime: {timestep}")
         #Clean the prompt comand of the OpenDSS
         dss.Basic.ClearAll()
         dss.Basic.Start(0)
@@ -23,14 +23,14 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
         #     # Write the command
         #     dss.Command(add_gd(generator))
 
-        #Add the batteries to the OpenDSS model
-        for battery in batteries:
-            dss.Command(add_bat(battery))
-
         #Add the loads to the OpenDSS model
         for load in loads:
             load.update_power(timestep)
             dss.Command(add_load(load))
+        
+        #Add the batteries to the OpenDSS model
+        for battery in batteries:
+            dss.Command(add_bat(battery))
 
         #Solve the power flow
         dss.Solution.Solve()  
