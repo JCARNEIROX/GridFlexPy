@@ -1,0 +1,23 @@
+Set DefaultBaseFrequency=60 
+
+!! Equivalente de Thèvenin 
+New Circuit.ModelagemTeste bus1=bus_001.1.2.3 basekV=0.22 
+
+!! Dados dos cabos e geometria das linhas
+New WireData.Fios Rdc=0.52 Rac=0.63 Runits=km Radius=3.338 Radunits=mm 
+New LineSpacing.N1 Nconds=3 Nphases=3 Units=cm X=[-120.0  0.0  60.0] H=[ 1000.0  1000.0  1000.0] 
+New LineGeometry.Geometria  Nconds=3  Spacing=N1 Wires=[Fios, Fios, Fios] Reduce=n' 
+
+!! Linhas
+New Line.Line_001_002 Bus1=bus_001 Bus2=bus_002 Length=25 Units=m Geometry=Geometria phases=3
+New Line.Line_002_003 Bus1=bus_002 Bus2=bus_003 Length=25 Units=m Geometry=Geometria phases=3
+New Line.Line_003_004 Bus1=bus_003 Bus2=bus_004 Length=25 Units=m Geometry=Geometria phases=3
+    
+!! Outras informações
+MakeBusList
+Set VoltageBases = [.22]
+CalcVoltageBases
+
+Set maxiterations = 500
+set mode=snap
+!! Solve

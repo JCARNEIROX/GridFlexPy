@@ -1,11 +1,21 @@
+import pandas as pd
 
+path = 'data/generator_profiles/'
 
-def add_gd(name, bus, phases, conn, kV, kW, Pf, model=1):
+def add_gd(Generator):
     """	
     Function to write a comand that will modify the power of the generator during the power flow simulation.
     """
-  
-    new_gd = f"New Generator.{name} bus1={bus} Phases={phases} kV={kV} Conn={conn} kW={kW} Pf={Pf} Model={model}"
+    name = Generator.id
+    bus = Generator.bus_node
+    phases = Generator.phases
+    kV = Generator.kV
+    Conn = Generator.Conn
+    kW = Generator.kW
+    Pf = Generator.Pf
+    model = Generator.Model
+
+    new_gd = f"New Generator.{name} bus1={bus} Phases={phases} kV={kV} Conn={Conn} kW={kW} Pf={Pf} Model={model}"
 
     return new_gd
 
@@ -19,19 +29,17 @@ def construct_generators(generators):
     """
     Construct the generator objects from the spreadsheet content.
     """
-    ids = generators['Id'].values
     list_generators_objects = []
 
-    for id in ids:
-        generator = Generator(id, generators.loc[generators['Id'] == id, 'Bus_node'].values[0], generators.loc[generators['Id'] == id, 'Phases'].values[0], generators.loc[generators['Id'] == id, 'kV'].values[0], 
-                              generators.loc[generators['Id'] == id, 'Conn'].values[0], generators.loc[generators['Id'] == id, 'kW'].values[0], generators.loc[generators['Id'] == id, 'Pf'].values[0],
-                              generators.loc[generators['Id'] == id, 'Model'].values[0], generators.loc[generators['Id'] == id, 'Profile'].values[0], generators.loc[generators['Id'] == id, 'Terminals'].values[0])
+    for _, row in generators.iterrows():
+        generator = Generator(row['Id'], row['Bus_node'], row['Phases'], row['kV'], 
+                              row['Conn'], row['Pf'], row['Model'], row['Profile'], row['Terminals'])
         list_generators_objects.append(generator)
 
     return list_generators_objects
 
 class Generator:
-    def __init__(self, id,buss_node,phases,kV,Conn,kW,Pf,Model,Profile,Terminals):
+    def __init__(self, id,buss_node,phases,kV,Conn,Pf,Model,Profile,Terminals,kW=0):
         self.id = id
         self.bus_node = buss_node
         self.phases = phases
@@ -42,3 +50,12 @@ class Generator:
         self.Model = Model
         self.Profile = Profile
         self.Terminals = Terminals
+
+    def update_power(self, timestep):
+        """
+        Load the profile and update the power of the load in a specific timestep.
+        """
+        data = pd.read_csv(f'{path}{self.Profile}.csv')
+        Ppower = data[data['datetime'] == timestep]['Ppower'].values[0]
+        self.kW = Ppower
+    
