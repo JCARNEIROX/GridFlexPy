@@ -1,6 +1,7 @@
 import pandas as pd
+import os
 
-path = 'data/generator_profiles/'
+path = os.getcwd() + '/data/generators_profiles/'
 
 def add_gd(Generator):
     """	
@@ -56,6 +57,7 @@ class Generator:
         Load the profile and update the power of the load in a specific timestep.
         """
         data = pd.read_csv(f'{path}{self.Profile}.csv')
+        data['datetime'] = pd.to_datetime(data['datetime'])
         Ppower = data[data['datetime'] == timestep]['Ppower'].values[0]
         self.kW = Ppower
     

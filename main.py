@@ -1,17 +1,18 @@
 import opendssdirect as dss
+import os
 from gridflexpy.read_spreadsheet import read_file_xlsx
 from gridflexpy.get_general_informations import get_informations
 from gridflexpy.bess import construct_bess
 from gridflexpy.generator import construct_generators
 from gridflexpy.load import construct_loads
 from gridflexpy.powerflow import power_flow
+from gridflexpy.plots import plot_graph_multlines
 
 
 if __name__ == '__main__':
     # Here is where the path to the files should be placed
-    path_xlsx = 'data/spreadsheets/'
-    path_dss = 'data/dss_files/'
-    load_profiles = 'data/loads/'	
+    path_xlsx = os.getcwd() + '/data/spreadsheets/'
+    path_dss = os.getcwd() + '/data/dss_files/'	
     
     # Read the file and
     file_contents = read_file_xlsx(path_xlsx+'teste_sheet.xlsx')
