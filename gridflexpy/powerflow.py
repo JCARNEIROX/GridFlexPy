@@ -38,38 +38,37 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
         # Display bus voltages
         voltages = dss.Circuit.AllBusVMag()
 
-        print("\nBus Phase Voltages (V):")
-        for bus, voltage in zip(buses, voltages):
-            print(f"{bus}: {voltage:.4f}")
+        voltage_df = get_bus_voltages(timestep,buses,voltages)
+        print(voltage_df)
+
         
         # Get the power of the buses
         # Display powers at buses
-        total_activepower,total_reactivepower = get_bus_power(buses,dss)
+        bus_power_df,power_df = get_bus_power(buses,timestep,dss)
+        print('\nPower at Buses:')
+        print(bus_power_df)
+        print('\nPower delivered to circuit:')
+        print(power_df)
+
 
         # Display power and current flows in branches
+        print("\nBranch Flows:")
         display_branch_flows(dss)
 
-        print("\nPower delivered to circuit:")
-        print("Active power (kW)\tReactive power (kvar)")
-        total_power = dss.Circuit.TotalPower()
-        print(f"\t{total_power[0]:.4f}\t\t{total_power[1]:.4f}")
-        print("\nTotal losses (kW): ")
-        active_losses,reactive_losses = dss.Circuit.Losses()
-        print(f"\t{active_losses / 1000:.4f}")
-
-        print("\nPower Balance:")
-        print("Active Power (kW)\tReactive Power (kvar)")
-        print(f"\t{abs(total_power[0])-(total_activepower+active_losses/1000):.4f}\t\t{abs(total_power[1])-(total_reactivepower+reactive_losses/1000):.4f}")
 
 
-
-def get_bus_power(buses,dss):
-    print("\nPowers at Buses:")
-    print("Bus\tActive Power (kW)\tReactive Power (kvar)")
+def get_bus_power(buses,timestep,dss):
+    # print("\nPowers at Buses:")
+    # print("Bus\tActive Power (kW)\tReactive Power (kvar)")
 
     total_active_power = 0
     total_reactive_power = 0
     elements = dss.Circuit.AllElementNames()
+
+    #Create a empty dataframe to store the active/reactive power demand at each bus
+    columns_bus = ['Timestep','Bus','P(kW)','Q(kvar)']
+    bus_power_df = pd.DataFrame(columns=columns_bus)
+
     for bus in buses:
         active_power = 0
         reactive_power = 0
@@ -89,17 +88,34 @@ def get_bus_power(buses,dss):
         total_reactive_power += reactive_power
 
         # Exibe as potências do barramento atual
-        print(f"{bus}\t{active_power:.4f}\t\t{reactive_power:.4f}")
+        new_line_bus = pd.DataFrame([[timestep, bus, round(active_power,4),round(reactive_power,4)]], columns=columns_bus)
+        bus_power_df = pd.concat([bus_power_df,new_line_bus],ignore_index=True)
+        # print(f"{bus}\t{active_power:.4f}\t\t{reactive_power:.4f}")
 
-    # Exibe as potências totais do sistema
-    print("\nTotal Active Power (kW): {:.4f}".format(total_active_power))
-    print("Total Reactive Power (kvar): {:.4f}".format(total_reactive_power))
+    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
+    columns_power = ['Timestep','Name','P(kW)','Q(kvar)']
+    power_df = pd.DataFrame(columns=columns_power)
 
-    return total_active_power,total_reactive_power
+    #Get the total power delivered to the circuit and total losses
+    total_power = dss.Circuit.TotalPower()
+    total_losses = dss.Circuit.Losses()# Losses in kW
+    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Demand', round(total_active_power,4), round(total_reactive_power,4)]], columns=columns_power)], ignore_index=True)
+    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Delivered', -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)], ignore_index=True)
+    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Total Losses', round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)], ignore_index=True)
+                         
+    # # Exibe as potências totais do sistema
+    # print("\nTotal Active Power (kW): {:.4f}".format(total_active_power))
+    # print("Total Reactive Power (kvar): {:.4f}".format(total_reactive_power))
 
-def display_branch_flows(dss):
-    print("\nFlows in Branches:")
-    print("Branch\t\tTotal Current (A)\tActive Power (kW)\tReactive Power (kvar)\t\tLosses (kW)")
+    return bus_power_df,power_df
+
+def display_branch_flows(timestep,dss):
+    # print("\nFlows in Branches:")
+    # print("Branch\t\tTotal Current (A)\tActive Power (kW)\tReactive Power (kvar)\t\tLosses (kW)")
+
+    #Create a empty dataframe to store the currents, active/reactive power and losses at each line
+    columns = ['Timestep','Branch','Current(A)','P(kW)','Q(kvar)','Losses(kW)']
+    branch_df = pd.DataFrame(columns=columns)
     lines = dss.Lines.AllNames()  # List of all lines in the circuit
     for line in lines:
         dss.Circuit.SetActiveElement(f"Line.{line}")
@@ -108,7 +124,19 @@ def display_branch_flows(dss):
         P_origin = sum(powers[::2][:3])  # Active power at the origin end
         Q_origin = sum(powers[1::2][:3])  # Reactive power at the origin end
         losses = dss.CktElement.Losses()[0] / 1000  # Losses (in kW)
-        print(f"{line}\t\t{currents:.4f}\t\t{P_origin:.4f}\t\t\t{Q_origin:.4f}\t\t\t{losses:.4f}")
+        new_line = pd.DataFrame([[timestep,line,round(currents,4),round(P_origin,4),round(Q_origin,4),round(losses,4)]], columns=columns)
+        branch_df = pd.concat([branch_df,new_line],ignore_index=True)
+        # print(f"{line}\t\t{currents:.4f}\t\t{P_origin:.4f}\t\t\t{Q_origin:.4f}\t\t\t{losses:.4f}")
+
+def get_bus_voltages(timestep,buses,voltages):
+    
+    #Create a empty dataframe to store the voltages
+    columns = ['Timestep','Bus','Voltage']
+    voltage_df = pd.DataFrame(columns=columns)
+    for bus, voltage in zip(buses, voltages):
+        new_line = pd.DataFrame([[timestep, bus, round(voltage,4)]], columns=columns)
+        voltage_df = pd.concat([voltage_df, new_line], ignore_index=True)
+
+    return voltage_df
 
         
-
