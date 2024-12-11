@@ -1,59 +1,86 @@
+import warnings
 import pandas as pd
 import re
-from generator import add_gd, get_GneratorPower
-from bess import add_bat
-from load import add_load
+from gridflexpy.generator import add_gd, get_GneratorPower
+from gridflexpy.bess import add_bat
+from gridflexpy.load import add_load
 
 def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,dss):
 
-    time_range = pd.date_range(date_ini, date_end, freq=str(step) + 'T')
+    #Create a empty dataframe to store the active/reactive power demand at each bus
+    columns_bus = ['Timestep','Bus','P(kW)','Q(kvar)']
+    bus_power = pd.DataFrame(columns=columns_bus)
 
-    for timestep in time_range:
-        print(f"\nTime: {timestep}")
-        #Clean the prompt comand of the OpenDSS
-        dss.Basic.ClearAll()
-        dss.Basic.Start(0)
-        dss.Command(f"Compile {opendssmodel}")
-        buses = dss.Circuit.AllBusNames()
+    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
+    columns_power = ['Timestep','Name','P(kW)','Q(kvar)']
+    power_df = pd.DataFrame(columns=columns_power)
 
-        #Add the generators to the OpenDSS model
-        # for generator in generators:
-        #     # Update the power of the generator in the timestep
-        #     generator.update_power(timestep)
-        #     # Write the command
-        #     dss.Command(add_gd(generator))
+    #Create a empty dataframe to store the currents, active/reactive power and losses at each line
+    columns = ['Timestep','Branch','Current(A)','P(kW)','Q(kvar)','Losses(kW)']
+    branch_df = pd.DataFrame(columns=columns)
 
-        #Add the loads to the OpenDSS model
-        for load in loads:
-            load.update_power(timestep)
-            dss.Command(add_load(load))
+    #Create a empty dataframe to store the voltages
+    columns = ['Timestep','Bus','Voltage']
+    voltage_df = pd.DataFrame(columns=columns)
+
+    # Use this functions to supress the warnings on the terminal
+    with warnings.catch_warnings():
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+
+        time_range = pd.date_range(date_ini, date_end, freq=str(step) + 'T')
+        for timestep in time_range:
+            print(f"\nTime: {timestep}")
+            #Clean the prompt comand of the OpenDSS
+            dss.Basic.ClearAll()
+            dss.Basic.Start(0)
+            dss.Command(f"Compile {opendssmodel}")
+            buses = dss.Circuit.AllBusNames()
+
+            #Add the generators to the OpenDSS model
+            # for generator in generators:
+            #     # Update the power of the generator in the timestep
+            #     generator.update_power(timestep)
+            #     # Write the command
+            #     dss.Command(add_gd(generator))
+
+            #Add the loads to the OpenDSS model
+            for load in loads:
+                load.update_power(timestep)
+                dss.Command(add_load(load))
+            
+            #Add the batteries to the OpenDSS model
+            for battery in batteries:
+                dss.Command(add_bat(battery))
+
+            #Solve the power flow
+            dss.Solution.Solve()  
+
+            # Display bus voltages
+            voltages = dss.Circuit.AllBusVMag()
+            voltage = get_bus_voltages(timestep,buses,voltages)
+            voltage_df = pd.concat([voltage_df,voltage],ignore_index=True)
+            # print(voltage_df)
+
+            
+            # Get the power of the buses and the power delivered to the circuit
+            bus_power_df,power_df = get_bus_power(buses,timestep,dss)
+            bus_power = pd.concat([bus_power,bus_power_df],ignore_index=True)
+            power_df = pd.concat([power_df,power_df],ignore_index=True)
+            
+            # print('\nPower at Buses:')
+            # print(bus_power_df)
+            # print('\nPower delivered to circuit:')
+            # print(power_df)
+
+
+            # Display power and current flows in branches
+            branch_df = display_branch_flows(timestep,dss)
+            branch_df = pd.concat([branch_df,branch_df],ignore_index=True)
+            # print("\nBranch Flows:")
+            # print(branch_df)
+
+    return bus_power,power_df,branch_df,voltage_df,time_range
         
-        #Add the batteries to the OpenDSS model
-        for battery in batteries:
-            dss.Command(add_bat(battery))
-
-        #Solve the power flow
-        dss.Solution.Solve()  
-
-        # Display bus voltages
-        voltages = dss.Circuit.AllBusVMag()
-
-        voltage_df = get_bus_voltages(timestep,buses,voltages)
-        print(voltage_df)
-
-        
-        # Get the power of the buses
-        # Display powers at buses
-        bus_power_df,power_df = get_bus_power(buses,timestep,dss)
-        print('\nPower at Buses:')
-        print(bus_power_df)
-        print('\nPower delivered to circuit:')
-        print(power_df)
-
-
-        # Display power and current flows in branches
-        print("\nBranch Flows:")
-        display_branch_flows(dss)
 
 
 
@@ -127,6 +154,8 @@ def display_branch_flows(timestep,dss):
         new_line = pd.DataFrame([[timestep,line,round(currents,4),round(P_origin,4),round(Q_origin,4),round(losses,4)]], columns=columns)
         branch_df = pd.concat([branch_df,new_line],ignore_index=True)
         # print(f"{line}\t\t{currents:.4f}\t\t{P_origin:.4f}\t\t\t{Q_origin:.4f}\t\t\t{losses:.4f}")
+    
+    return branch_df
 
 def get_bus_voltages(timestep,buses,voltages):
     

@@ -13,8 +13,8 @@ def add_bat(Bess):
     Eff = Bess.Efficiency
     Emin = Bess.Emin
 
-    # new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWhRated={Emax} %stored={Et} %EffCharge={Eff} %EffDischarge={Eff} %reserve={Emin}"
-    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases=3 kV=0.22 kW=5 kWhRated=10 %stored=100 %EffCharge=95 %EffDischarge=95 %reserve=20 "
+    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWhRated={Emax} %stored={Et} %EffCharge={Eff} %EffDischarge={Eff} %reserve={Emin}"
+    # new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases=3 kV=0.22 kW=5 kWhRated=10 %stored=100 %EffCharge=95 %EffDischarge=95 %reserve=20 "
     
     return new_bat
 
