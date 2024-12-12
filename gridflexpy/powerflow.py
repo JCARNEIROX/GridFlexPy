@@ -1,9 +1,9 @@
 import warnings
 import pandas as pd
 import re
-from gridflexpy.generator import add_gd, get_GneratorPower
-from gridflexpy.bess import add_bat
-from gridflexpy.load import add_load
+from gridflexpy.generator import add_gd, get_GneratorPower,get_GenPower
+from gridflexpy.bess import add_bat, get_BessPower
+from gridflexpy.load import add_load,get_LoadPower
 
 def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,dss):
 
@@ -13,23 +13,24 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
 
     #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
     columns_power = ['Timestep','Name','P(kW)','Q(kvar)']
-    power_df = pd.DataFrame(columns=columns_power)
+    power_df1 = pd.DataFrame(columns=columns_power)
 
     #Create a empty dataframe to store the currents, active/reactive power and losses at each line
     columns = ['Timestep','Branch','Current(A)','P(kW)','Q(kvar)','Losses(kW)']
-    branch_df = pd.DataFrame(columns=columns)
+    branch_df1 = pd.DataFrame(columns=columns)
 
     #Create a empty dataframe to store the voltages
     columns = ['Timestep','Bus','Voltage']
-    voltage_df = pd.DataFrame(columns=columns)
+    voltage_df1 = pd.DataFrame(columns=columns)
 
     # Use this functions to supress the warnings on the terminal
     with warnings.catch_warnings():
         warnings.simplefilter(action='ignore', category=FutureWarning)
 
         time_range = pd.date_range(date_ini, date_end, freq=str(step) + 'T')
+        print('Power Flow Simulation Started')
         for timestep in time_range:
-            print(f"\nTime: {timestep}")
+            # print(f"\nTime: {timestep}")
             #Clean the prompt comand of the OpenDSS
             dss.Basic.ClearAll()
             dss.Basic.Start(0)
@@ -58,14 +59,14 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
             # Display bus voltages
             voltages = dss.Circuit.AllBusVMag()
             voltage = get_bus_voltages(timestep,buses,voltages)
-            voltage_df = pd.concat([voltage_df,voltage],ignore_index=True)
+            voltage_df1 = pd.concat([voltage_df1,voltage],ignore_index=True)
             # print(voltage_df)
 
             
             # Get the power of the buses and the power delivered to the circuit
             bus_power_df,power_df = get_bus_power(buses,timestep,dss)
             bus_power = pd.concat([bus_power,bus_power_df],ignore_index=True)
-            power_df = pd.concat([power_df,power_df],ignore_index=True)
+            power_df1 = pd.concat([power_df1,power_df],ignore_index=True)
             
             # print('\nPower at Buses:')
             # print(bus_power_df)
@@ -75,11 +76,13 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
 
             # Display power and current flows in branches
             branch_df = display_branch_flows(timestep,dss)
-            branch_df = pd.concat([branch_df,branch_df],ignore_index=True)
+            branch_df1 = pd.concat([branch_df1,branch_df],ignore_index=True)
             # print("\nBranch Flows:")
             # print(branch_df)
 
-    return bus_power,power_df,branch_df,voltage_df,time_range
+        print('Power Flow Simulation Finished')
+
+    return bus_power,power_df1,branch_df1,voltage_df1,time_range
         
 
 
@@ -106,6 +109,7 @@ def get_bus_power(buses,timestep,dss):
 
     for bus in buses:
 
+        #Initializate the powers at actual bus
         bus_active_power = 0
         bus_reactive_power = 0
 
@@ -115,36 +119,37 @@ def get_bus_power(buses,timestep,dss):
         batteries = [element for element in elements if element.startswith("Storage.") and bus in element]
         # loads = [element for element in elements if re.search(f"{bus}", element)]
 
-        # Separar em funções posteriormente
-        for load in loads:
-            dss.Circuit.SetActiveElement(load)
-            powers = dss.CktElement.Powers()
-            load_active_power += sum(powers[::2])  # Somando potências ativas
-            load_reactive_power += sum(powers[1::2])  # Somando potências reativas
+        # Extract the power of loads in actual bus and their contribuition for the bus power
+        load_power,bus_power = get_LoadPower(loads,dss)
+        #Sum the load power
+        load_active_power += load_power[0]
+        load_reactive_power += load_power[1]
 
-            bus_active_power += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_reactive_power += sum(powers[1::2])  # Somando potências reativas nos barramentos
+        #Sum the bus power
+        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
+        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
 
-        for gen in generators:
-            dss.Circuit.SetActiveElement(gen)
-            powers = dss.CktElement.Powers()
-            gen_active_power -= sum(powers[::2])  # Somando potências ativas
-            gen_reactive_power -= sum(powers[1::2])  # Somando potências reativas
+        # Extract the power of generators in actual bus and their contribuition for the bus power
+        gen_power,bus_power = get_GenPower(generators,dss)
+        
+        #Sum the generators power
+        gen_active_power += gen_power[0]
+        gen_reactive_power += gen_power[1]
+        #Sum the bus power
+        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
+        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
 
-            bus_active_power += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_reactive_power += sum(powers[1::2])  # Somando potências reativas nos barramentos
-
-        for bat in batteries:
-            dss.Circuit.SetActiveElement(bat)
-            powers = dss.CktElement.Powers()
-            battery_active_power -= sum(powers[::2])  # Somando potências ativas
-            battery_reactive_power -= sum(powers[1::2])  # Somando potências reativas
-
-            bus_active_power += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_reactive_power += sum(powers[1::2])  # Somando potências reativas nos barramentos
-
-
-        # Exibe as potências do barramento atual
+        # Extract the power of batteries in actual bus and their contribuition for the bus power
+        bess_power,bus_power = get_BessPower(batteries,dss)
+        
+        #Sum the generators power
+        battery_active_power += bess_power[0]
+        battery_reactive_power += bess_power[1]
+        #Sum the bus power
+        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
+        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
+        
+        # Store the total sum of active and reactive power in actual bus at timestep
         new_line_bus = pd.DataFrame([[timestep, bus, round(bus_active_power,4),round(bus_reactive_power,4)]], columns=columns_bus)
         bus_power_df = pd.concat([bus_power_df,new_line_bus],ignore_index=True)
         # print(f"{bus}\t{active_power:.4f}\t\t{reactive_power:.4f}")

@@ -38,7 +38,24 @@ def construct_loads(loads):
     
     return list_loads_objects
 
+def get_LoadPower(loads,dss):
+    """
+    Get the power of the loads in the circuit.
+    Returns a two double array with the power of the loads and bus power
+    """
+    load_power = [0,0]
+    bus_power = [0,0]
     
+    for load in loads:
+            dss.Circuit.SetActiveElement(load)
+            powers = dss.CktElement.Powers()
+            load_power[0] += sum(powers[::2])  # Somando potências ativas
+            load_power[1] += sum(powers[1::2])  # Somando potências reativas
+
+            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
+            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
+            
+    return load_power,bus_power
 
 class Load:
     def __init__(self, id,buss_node,phases,Conn,kV,Pf,Pmax,Model,Class,Vminpu,Terminals, ZIPV=(0.5, 0, 0.5, 1, 0, 0, 0.5),kW=0):

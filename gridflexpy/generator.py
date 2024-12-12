@@ -39,6 +39,26 @@ def construct_generators(generators):
 
     return list_generators_objects
 
+
+def get_GenPower(generators,dss):
+    """
+    Get the power of the generators in the circuit.
+    Returns a two double array with the power of the loads and bus power
+    """
+
+    gen_power = [0,0]
+    bus_power = [0,0]
+    for gen in generators:
+            dss.Circuit.SetActiveElement(gen)
+            powers = dss.CktElement.Powers()
+            gen_power[0] -= sum(powers[::2])  # Somando potências ativas
+            gen_power[1] -= sum(powers[1::2])  # Somando potências reativas
+
+            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
+            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
+    
+    return gen_power,bus_power
+            
 class Generator:
     def __init__(self, id,buss_node,phases,kV,Conn,Pf,Model,Profile,Terminals,kW=0):
         self.id = id

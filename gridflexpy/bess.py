@@ -33,6 +33,22 @@ def construct_bess(batteries):
 
     return list_bess_objects
 
+def get_BessPower(batteries,dss):
+
+    battery_power = [0,0]
+    bus_power = [0,0]
+
+    for bat in batteries:
+            dss.Circuit.SetActiveElement(bat)
+            powers = dss.CktElement.Powers()
+            battery_power[0] -= sum(powers[::2])  # Somando potências ativas
+            battery_power[1] -= sum(powers[1::2])  # Somando potências reativas
+
+            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
+            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
+    
+    return battery_power,bus_power
+
 class Bess:
     def __init__(self, id,buss_node,Phases,kV,Pmax,Einit,Emax,Emin,Efficiency):
         self.id = id
