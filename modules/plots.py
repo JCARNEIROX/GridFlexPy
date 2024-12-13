@@ -12,10 +12,13 @@ plt.rcParams['font.sans-serif'] = ['cmr10']
 plt.rcParams['axes.unicode_minus'] = False
 
 
-def plot(x,y,title='',xlabel='',ylabel='',figsize=(8,6),grid = True, lines=[],**kwargs):
+def plot(graph,x,y,title='',xlabel='',ylabel='',figsize=(8,6),grid = True, lines=[],**kwargs):
 
     """ 
     Função para plotar um gráfico de linha.
+    graph: tipo de gráfico
+           'Power': gráfico de potência
+            'Voltage': gráfico de tensão
     Parâmetros: x axis for time
                 y axis for power
                 title: name of the plot
@@ -27,25 +30,26 @@ def plot(x,y,title='',xlabel='',ylabel='',figsize=(8,6),grid = True, lines=[],**
                 for more kwargs informations see: https://matplotlib.org/3.5.3/api/_as_gen/matplotlib.pyplot.html
     """
     if len(lines)>1:
-        fig = plot_graph_multlines(x,y,lines,grid,title,xlabel,ylabel,figsize,**kwargs)
+        fig = plot_graph_multlines(graph,x,y,lines,grid,title,xlabel,ylabel,figsize,**kwargs)
 
     return fig
     
-def plot_graph_multlines(x, y, labels,grid, title, xlabel, ylabel, figsize, **kwargs):
+def plot_graph_multlines(graph,x, y, labels,grid, title, xlabel, ylabel, figsize, **kwargs):
 
     fig = plt.figure(figsize=figsize)
-    for label in labels:
-        data = y.loc[y['Name']==label,'P(kW)']
-        plt.plot(x, data,label=label,**kwargs)
+    if graph == 'Power':
+        for label in labels:
+            data = y.loc[y['Name']==label,'P(kW)']
+            plt.plot(x, data,label=label,**kwargs)
 
     plt.legend()
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(grid)
-    # Personalizar o eixo x para exibir tempos legíveis
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  # Exemplo: apenas hora:minuto
-    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))  # Intervalo de 1 hora nos ticks principais
+    # Format the x axis to display readable times
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  # Hour:minute format
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))  # Can change the interval of the major ticks
     plt.minorticks_on()
     
     return fig
@@ -67,14 +71,32 @@ def plot_graph(x, y, title='', xlabel='', ylabel='', figsize=(8, 6), **kwargs):
     
     plt.show()
 
+def plot_bus_voltages(time,voltage_df,title,xlabel,ylabel,figsize=(8,6),grid=True,**kwargs):
+    fig = plt.figure(figsize=figsize)
+    #List all buses in the colum 'Bus' of dataframe
+    buses = voltage_df['Bus'].unique()
+    for bus in buses[:len(buses)-1:1]:
+        data = voltage_df.loc[voltage_df['Bus']==bus,'Voltage']
+        plt.plot(time,data,label=bus,**kwargs)
+    
+    plt.legend()
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.grid(grid)
+    # Personalizar o eixo x para exibir tempos legíveis
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  # Exemplo: apenas hora:minuto
+    plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))  # Intervalo de 1 hora nos ticks principais
+    plt.minorticks_on()
+
+    return fig
+
 def display_graph(fig):
     fig.show()
     plt.show(block=True)
 
 def save_fig(fig,name_file,path):
-    ax = fig.gca()  # Obter o eixo atual
-    ax.set_aspect('auto')  # Configurar o aspecto para automático ou um valor específico
-    fig.tight_layout()
+    
     fig.savefig(path+name_file, bbox_inches='tight', dpi=300)  # 'bbox_inches' para evitar cortes no gráfico
     print(f"Figura salva em: {path}")
 

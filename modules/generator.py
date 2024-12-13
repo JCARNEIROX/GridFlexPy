@@ -51,12 +51,11 @@ def get_GenPower(generators,dss):
     for gen in generators:
             dss.Circuit.SetActiveElement(gen)
             powers = dss.CktElement.Powers()
-            gen_power[0] -= sum(powers[::2])  # Somando potências ativas
-            gen_power[1] -= sum(powers[1::2])  # Somando potências reativas
+            gen_power[0] -= sum(powers[::2])  # Sum the active power
+            gen_power[1] -= sum(powers[1::2])  # Sum reactive power
 
-            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
-    
+            bus_power[0] += sum(powers[::2])  # Sum the active power at bus
+            bus_power[1] += sum(powers[1::2])  # Sum the reactive power at bus
     return gen_power,bus_power
             
 class Generator:

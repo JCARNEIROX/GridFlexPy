@@ -1,9 +1,9 @@
 import warnings
 import pandas as pd
 import re
-from gridflexpy.generator import add_gd, get_GneratorPower,get_GenPower
-from gridflexpy.bess import add_bat, get_BessPower
-from gridflexpy.load import add_load,get_LoadPower
+from modules.generator import add_gd, get_GneratorPower,get_GenPower
+from modules.bess import add_bat, get_BessPower
+from modules.load import add_load,get_LoadPower
 
 def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,dss):
 
@@ -36,6 +36,11 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
             dss.Basic.Start(0)
             dss.Command(f"Compile {opendssmodel}")
             buses = dss.Circuit.AllBusNames()
+
+            dss.Circuit.SetActiveElement('Line.sw_001_002')
+            dss.Command('Open Line.sw_001_002 1')
+            dss.Command('Open Line.sw_001_002 2')
+            dss.Command('Open Line.sw_001_002 3')
 
             #Add the generators to the OpenDSS model
             for generator in generators:
@@ -126,8 +131,8 @@ def get_bus_power(buses,timestep,dss):
         load_reactive_power += load_power[1]
 
         #Sum the bus power
-        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
-        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
+        bus_active_power += bus_power[0]  # Sum the active power at bus
+        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
 
         # Extract the power of generators in actual bus and their contribuition for the bus power
         gen_power,bus_power = get_GenPower(generators,dss)
@@ -136,8 +141,8 @@ def get_bus_power(buses,timestep,dss):
         gen_active_power += gen_power[0]
         gen_reactive_power += gen_power[1]
         #Sum the bus power
-        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
-        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
+        bus_active_power += bus_power[0]  # Sum the active power at bus
+        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
 
         # Extract the power of batteries in actual bus and their contribuition for the bus power
         bess_power,bus_power = get_BessPower(batteries,dss)
@@ -146,8 +151,8 @@ def get_bus_power(buses,timestep,dss):
         battery_active_power += bess_power[0]
         battery_reactive_power += bess_power[1]
         #Sum the bus power
-        bus_active_power += bus_power[0]  # Somando potências ativas nos barramentos
-        bus_reactive_power += bus_power[1]  # Somando potências reativas nos barramentos
+        bus_active_power += bus_power[0]  # Sum the active power at bus
+        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
         
         # Store the total sum of active and reactive power in actual bus at timestep
         new_line_bus = pd.DataFrame([[timestep, bus, round(bus_active_power,4),round(bus_reactive_power,4)]], columns=columns_bus)

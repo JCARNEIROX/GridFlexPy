@@ -41,11 +41,11 @@ def get_BessPower(batteries,dss):
     for bat in batteries:
             dss.Circuit.SetActiveElement(bat)
             powers = dss.CktElement.Powers()
-            battery_power[0] -= sum(powers[::2])  # Somando potências ativas
-            battery_power[1] -= sum(powers[1::2])  # Somando potências reativas
+            battery_power[0] -= sum(powers[::2])  #  Sum the active power
+            battery_power[1] -= sum(powers[1::2])  # Sum the reacti power
 
-            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
+            bus_power[0] += sum(powers[::2])  # Sum the active power at bus
+            bus_power[1] += sum(powers[1::2])  # Sum the reacti power at bus
     
     return battery_power,bus_power
 
@@ -78,9 +78,9 @@ class Bess:
         """
         Change the energy storaged off battery with timestep in min.
         """
-        if self.Pt > 0:  # Carregando
+        if self.Pt > 0:  # Charging
             energy_change = self.Pt * (timestep/60) * (self.Efficiency / 100)
-        else:  # Descarregando
+        else:  # Discharging    
             energy_change = self.Pt * (timestep/60) * (1 / (self.Efficiency / 100))
 
         new_energy = self.Et + energy_change

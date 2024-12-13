@@ -1,13 +1,14 @@
 import opendssdirect as dss
 import pandas as pd
 import os
-from gridflexpy.read_spreadsheet import read_file_xlsx
-from gridflexpy.get_general_informations import get_informations
-from gridflexpy.bess import construct_bess
-from gridflexpy.generator import construct_generators
-from gridflexpy.load import construct_loads
-from gridflexpy.powerflow import power_flow
-from gridflexpy.plots import plot, display_graph,save_fig
+from modules.read_spreadsheet import read_file_xlsx
+from modules.get_general_informations import get_informations
+from modules.bess import construct_bess
+from modules.generator import construct_generators
+from modules.load import construct_loads
+from modules.powerflow import power_flow
+from modules.plots import plot, display_graph,save_fig,plot_bus_voltages
+from modules.utils import save_csv
 import time as t
 
 
@@ -44,10 +45,17 @@ if __name__ == '__main__':
     start = t.time()
     bus_power,power_df,branch_df,voltage_df,time = power_flow(date_ini,date_end,timestep,file_dss,bess_list,generators_list,loads_list,dss)
     print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
+    # save_csv(bus_power,'bus_power',output_csv)
+    # save_csv(power_df,'power_df',output_csv)
+    # save_csv(branch_df,'branch_df',output_csv)
+    # save_csv(voltage_df,'voltage_df)',output_csv)
+   
 
-    power_balance = plot(time,power_df,'Powers at Circuit','Time(h)', 'Power(kW)',lines=['Load','Generation','Delivered'])
-    display_graph(power_balance)
-    save_fig(power_balance,'power_balance',output_img)
+    power_balance = plot('Power',time,power_df,'Switch Closed','Time(h)', 'Power(kW)',lines=['Load','Generation','Delivered'])
+    bus_voltage = plot_bus_voltages(time,voltage_df,'Bus Voltages Switch Open','Time(h)','Voltage(V)')
+    # save_fig(bus_voltage,'Bus Voltages Switch Open',output_img)
+    display_graph(bus_voltage)
+    
 
 
 

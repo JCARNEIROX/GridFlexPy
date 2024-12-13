@@ -49,12 +49,12 @@ def get_LoadPower(loads,dss):
     for load in loads:
             dss.Circuit.SetActiveElement(load)
             powers = dss.CktElement.Powers()
-            load_power[0] += sum(powers[::2])  # Somando potências ativas
-            load_power[1] += sum(powers[1::2])  # Somando potências reativas
+            load_power[0] += sum(powers[::2])  # Sum the active power
+            load_power[1] += sum(powers[1::2])  # Sum the reactive
 
-            bus_power[0] += sum(powers[::2])  # Somando potências ativas nos barramentos
-            bus_power[1] += sum(powers[1::2])  # Somando potências reativas nos barramentos
-            
+            bus_power[0] += sum(powers[::2])  # Sum the active power at bus
+            bus_power[1] += sum(powers[1::2])  # Sum the reactive power at bus
+
     return load_power,bus_power
 
 class Load:
