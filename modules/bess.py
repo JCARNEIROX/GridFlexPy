@@ -33,7 +33,10 @@ def construct_bess(batteries):
 
     return list_bess_objects
 
-def get_BessPower(batteries,dss):
+def get_BessPower(dss,bus):
+
+    elements = dss.Circuit.AllElementNames()
+    batteries = [element for element in elements if element.startswith("Storage.") and bus in element]
 
     battery_power = [0,0]
     bus_power = [0,0]

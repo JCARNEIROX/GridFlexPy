@@ -38,11 +38,13 @@ def construct_loads(loads):
     
     return list_loads_objects
 
-def get_LoadPower(loads,dss):
+def get_LoadPower(dss,bus):
     """
     Get the power of the loads in the circuit.
     Returns a two double array with the power of the loads and bus power
     """
+    elements = dss.Circuit.AllElementNames()
+    loads = [element for element in elements if element.startswith("Load.") and bus in element]
     load_power = [0,0]
     bus_power = [0,0]
     

@@ -37,10 +37,10 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
             dss.Command(f"Compile {opendssmodel}")
             buses = dss.Circuit.AllBusNames()
 
-            dss.Circuit.SetActiveElement('Line.sw_001_002')
-            dss.Command('Open Line.sw_001_002 1')
-            dss.Command('Open Line.sw_001_002 2')
-            dss.Command('Open Line.sw_001_002 3')
+            # dss.Circuit.SetActiveElement('Line.sw_001_002')
+            # dss.Command('Open Line.sw_001_002 1')
+            # dss.Command('Open Line.sw_001_002 2')
+            # dss.Command('Open Line.sw_001_002 3')
 
             #Add the generators to the OpenDSS model
             for generator in generators:
@@ -62,8 +62,8 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
             dss.Solution.Solve()  
 
             # Display bus voltages
-            voltages = dss.Circuit.AllBusVMag()
-            voltage = get_bus_voltages(timestep,buses,voltages)
+            
+            voltage = get_bus_voltages(timestep,buses,dss)
             voltage_df1 = pd.concat([voltage_df1,voltage],ignore_index=True)
             # print(voltage_df)
 
@@ -106,7 +106,7 @@ def get_bus_power(buses,timestep,dss):
     battery_active_power = 0
     battery_reactive_power = 0
     
-    elements = dss.Circuit.AllElementNames()
+    
 
     #Create a empty dataframe to store the active/reactive power demand at each bus
     columns_bus = ['Timestep','Bus','P(kW)','Q(kvar)']
@@ -118,14 +118,8 @@ def get_bus_power(buses,timestep,dss):
         bus_active_power = 0
         bus_reactive_power = 0
 
-        # Filtra as cargas associadas ao barramento atual
-        loads = [element for element in elements if element.startswith("Load.") and bus in element]
-        generators = [element for element in elements if element.startswith("Generator.") and bus in element]
-        batteries = [element for element in elements if element.startswith("Storage.") and bus in element]
-        # loads = [element for element in elements if re.search(f"{bus}", element)]
-
         # Extract the power of loads in actual bus and their contribuition for the bus power
-        load_power,bus_power = get_LoadPower(loads,dss)
+        load_power,bus_power = get_LoadPower(dss,bus)
         #Sum the load power
         load_active_power += load_power[0]
         load_reactive_power += load_power[1]
@@ -135,7 +129,7 @@ def get_bus_power(buses,timestep,dss):
         bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
 
         # Extract the power of generators in actual bus and their contribuition for the bus power
-        gen_power,bus_power = get_GenPower(generators,dss)
+        gen_power,bus_power = get_GenPower(dss,bus)
         
         #Sum the generators power
         gen_active_power += gen_power[0]
@@ -145,7 +139,7 @@ def get_bus_power(buses,timestep,dss):
         bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
 
         # Extract the power of batteries in actual bus and their contribuition for the bus power
-        bess_power,bus_power = get_BessPower(batteries,dss)
+        bess_power,bus_power = get_BessPower(dss,bus)
         
         #Sum the generators power
         battery_active_power += bess_power[0]
@@ -198,9 +192,10 @@ def display_branch_flows(timestep,dss):
     
     return branch_df
 
-def get_bus_voltages(timestep,buses,voltages):
+def get_bus_voltages(timestep,buses,dss):
     
     #Create a empty dataframe to store the voltages
+    voltages = dss.Circuit.AllBusVMag()  # List of all bus voltages
     columns = ['Timestep','Bus','Voltage']
     voltage_df = pd.DataFrame(columns=columns)
     for bus, voltage in zip(buses, voltages):

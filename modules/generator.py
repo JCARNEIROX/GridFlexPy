@@ -40,11 +40,13 @@ def construct_generators(generators):
     return list_generators_objects
 
 
-def get_GenPower(generators,dss):
+def get_GenPower(dss,bus):
     """
     Get the power of the generators in the circuit.
     Returns a two double array with the power of the loads and bus power
     """
+    elements = dss.Circuit.AllElementNames()
+    generators = [element for element in elements if element.startswith("Generator.") and bus in element]
 
     gen_power = [0,0]
     bus_power = [0,0]
