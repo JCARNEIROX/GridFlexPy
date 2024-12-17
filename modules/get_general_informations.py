@@ -7,6 +7,21 @@ def get_informations(general_informations):
     timestep = general_informations.loc[general_informations['Parameter'] == 'timestep', 'Value'].values[0]
 
     # Create a dict with all informations collected
-    general_informations = {'start_date': start_date, 'end_date': end_date, 'timestep': timestep}
-
+    general_informations = GenInformations(start_date,end_date,timestep)
     return general_informations
+
+
+class GenInformations:
+    def __init__(self,start_date='',end_date='',timestep=0):
+        self.start_date = start_date
+        self.end_date = end_date
+        self.timestep = timestep
+    
+    def update_start_date(self,start_date):
+        self.start_date = start_date
+    
+    def update_end_date(self,end_date):
+        self.end_date = end_date
+    
+    def update_timestep(self,timestep):
+        self.timestep = timestep

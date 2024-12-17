@@ -1,11 +1,15 @@
 import warnings
 import pandas as pd
 import re
-from modules.generator import add_gd, get_GneratorPower,get_GenPower
-from modules.bess import add_bat, get_BessPower
-from modules.load import add_load,get_LoadPower
+import os
+from generator import add_gd, get_GneratorPower,get_GenPower
+from bess import add_bat, get_BessPower
+from load import add_load,get_LoadPower
+import time as t
 
-def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,dss):
+output_csv = os.getcwd() + '/data/output/csv/'
+
+def power_flow(gen_inform,opendssmodel,batteries,generators,loads,dss):
 
     #Create a empty dataframe to store the active/reactive power demand at each bus
     columns_bus = ['Timestep','Bus','P(kW)','Q(kvar)']
@@ -27,8 +31,9 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
     with warnings.catch_warnings():
         warnings.simplefilter(action='ignore', category=FutureWarning)
 
-        time_range = pd.date_range(date_ini, date_end, freq=str(step) + 'T')
+        time_range = pd.date_range(gen_inform.start_date, gen_inform.end_date, freq=str(gen_inform.timestep) + 'T')
         print('Power Flow Simulation Started')
+        start = t.time()
         for timestep in time_range:
             # print(f"\nTime: {timestep}")
             #Clean the prompt comand of the OpenDSS
@@ -85,9 +90,12 @@ def power_flow(date_ini,date_end,step,opendssmodel,batteries,generators,loads,ds
             # print("\nBranch Flows:")
             # print(branch_df)
 
-        print('Power Flow Simulation Finished')
-
-    return bus_power,power_df1,branch_df1,voltage_df1,time_range
+        print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
+    
+    bus_power.to_csv(output_csv+'bus_power.csv',index=False)
+    power_df1.to_csv(output_csv+'power_df.csv',index=False)
+    branch_df1.to_csv(output_csv+'branch_df.csv',index=False)
+    voltage_df1.to_csv(output_csv+'voltage_df.csv',index=False)
         
 
 

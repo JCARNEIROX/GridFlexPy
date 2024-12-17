@@ -100,52 +100,34 @@ def save_fig(fig,name_file,path):
     fig.savefig(path+name_file, bbox_inches='tight', dpi=300)  # 'bbox_inches' para evitar cortes no gráfico
     print(f"Figura salva em: {path}")
 
-def plot_interface():
-    print("Choose the type of plot:\n \t1 - Power\n \t2 - Voltage\n \t3 - Branch Flows")
-    print("Choose an option")
-    type_option = input()
-    while type_option not in ['1','2','3']:
-        print("Invalid Option")
-        print("Choose the type of plot:\n \t1 - Power\n \t2 - Voltage\n \t3 - Branch Flows")
-        print("Choose an option")
-        type_option = input()
-    graph_type = ''
-    if type_option == '1':
-        graph_type = 'Power'
-        print("Do you want to see the power of:\n \t1 - Loads\n \t2 - Generators\n \t3 - Delivered\n \t4 - Total Losses\n \t5 - Buses")
-        print("Choose an option")
-        power_option = input()
-        print("Give the graph Specifications:")
-        title = input("Title: ")
-        figsize = input("Figsize in inches: height width\n")
-        h,w = figsize.split()
-        print(h,w)
-    elif type_option == '2':
-        graph_type = 'Voltage'
-    elif type_option == '3':
-        graph_type = 'Branch'
-    else:
-        print("Invalid Option")
-
-    
-    
-
-
 
 class Plot:
-    def __init__(self,type,NameBus,title,multiline=False,Figsize=(8,6),grid=True):
+    def __init__(self,type='',NameObject=[],title='',multiline=False,Figsize=(8,6),grid=True):
         self.type = type
-        self.NameBus = NameBus
+        self.NameObject = NameObject
         self.title = title
         self.multiline = multiline
         self.Figsize = Figsize
         self.grid = grid
-    
-    def multilines(self,lines):
-        self.lines = lines
 
-    def get_name_lines(self):
-        list_lines = []
-        for line in self.NameBus.split(''):
-            list_lines.append(line)
-        return list_lines
+    def update_type(self,type):
+        self.type = type
+    
+    def nameobjects(self,list_object):
+        if type(list_object) == str:
+            self.NameObject = list_object
+        else:
+            self.NameObject = list_object
+    
+    def update_title(self,title):
+        self.title = title
+    
+    def multilines(self,bool):
+        self.multiline = bool
+    
+    def FigSize(self,size):
+        self.FigSize =size
+    
+    def AddGrid(self,bool):
+        self.grid = bool
+    
