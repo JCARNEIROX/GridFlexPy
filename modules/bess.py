@@ -1,4 +1,7 @@
 
+from scipy.ndimage import gaussian_filter,gaussian_filter1d
+import numpy as np
+
 def add_bat(Bess):
     """	
     Function to write a comand that will modify the power of the battery during the power flow simulation.
@@ -8,12 +11,13 @@ def add_bat(Bess):
     Phases = Bess.Phases
     kV = Bess.kV
     kW = Bess.Pt # Instanteneous power of the battery, kw>0: charging, kw<0: discharging
+    Pmax = Bess.Pmax
     Emax = Bess.Emax
-    Et = Bess.Et  # Instanteneous energy stored in the battery, %stored
+    SOC = Bess.SOC  # Instanteneous energy stored in the battery, %stored
     Eff = Bess.Efficiency
     Emin = Bess.Emin
 
-    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWhRated={Emax} %stored={Et} %EffCharge={Eff} %EffDischarge={Eff} %reserve={Emin}"
+    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWrated={Pmax} kWhRated={Emax} %stored={SOC} %EffCharge={Eff} %EffDischarge={Eff} %reserve={Emin}"
     # new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases=3 kV=0.22 kW=5 kWhRated=10 %stored=100 %EffCharge=95 %EffDischarge=95 %reserve=20 "
     
     return new_bat
@@ -53,14 +57,15 @@ def get_BessPower(dss,bus):
     return battery_power,bus_power
 
 class Bess:
-    def __init__(self, id,buss_node,Phases,kV,Pmax,Einit,Emax,Emin,Efficiency):
+    def __init__(self, id, buss_node, Phases, kV, Pmax, Einit, Emax, Emin, Efficiency):
         self.id = id
         self.bus_node = buss_node
         self.Phases = Phases
         self.kV = kV
         self.Pmax = Pmax
         self.Pt = 0
-        self.Et = (Einit/Emax)*100
+        self.SOC = (Einit/Emax)*100
+        self.Et = Einit
         self.Einit = (Einit/Emax)*100
         self.Emax = Emax
         self.Emin = Emin
@@ -72,10 +77,7 @@ class Bess:
         kw > 0: Charging.
         kw < 0: Discharging.
         """
-        if abs(new_power) > self.Pmax:
-            self.Pt = self.Pmax if new_power > 0 else -self.Pmax
-        else:
-            self.Pt = new_power
+        self.Pt = new_power
 
     def update_energy(self, timestep):
         """
@@ -94,10 +96,113 @@ class Bess:
         else:
             self.Et = new_energy
     
+    def update_soc(self,soc):
+        self.SOC = soc
+    
     def get_Pt(self):
         return self.Pt
     
     def get_Et(self):
         return self.Et
         
-    
+
+def bess_operation(i,timestep,demand,load,gen_power,gen_forec,alpha,bheta,sigma,bess_object):
+
+    #Values for pv generation
+    pv_med = np.mean(gen_power[i-3:i])
+    next_pv = (alpha * gen_forec) + (bheta * pv_med) # wheighting for the forecasting of pv generation
+
+    #Mean of the previous 3 time steps
+    load_prev = np.mean(load[i-3:i])
+    next_demand = load_prev-next_pv
+
+    #Values of demand
+    actual_demand = demand[i]
+    prev_demand = demand[i-1]
+
+    #Gauss calculus
+    vec_gauss = [prev_demand,actual_demand,next_demand] # Vetor a ser aplicado o Filtro Gaussiano
+    gauss_value = gaussian_filter1d(vec_gauss,sigma=sigma,radius=1)[1] #Valor a ser utilizado para definir a potência do BESS
+
+    #Define the next bess_power based on the actual demand and gaus value returned
+    PBessSeg = (actual_demand-gauss_value)
+
+    #Calculate the new Energy based on the injection/dispatch power
+    Bess_E_seg = bess_object.Et + (PBessSeg*(timestep/60))
+
+    #Actual state of charge of battery
+    Soc = bess_object.SOC
+
+    if PBessSeg> 0 : #Bateria vai carregar
+
+      if PBessSeg>bess_object.Pmax: #Potência seguinte maior que a maxima
+         Pseg = bess_object.Pmax
+         Bess_E_seg = bess_object.Et+Pseg*(timestep/60) # Energia da bateria no instante seguinte
+
+         if Bess_E_seg>bess_object.Emax: #Energia seguinte maior que máxima permitida
+            Pseg = (bess_object.Emax-bess_object.Et)/(timestep/60) #carrega para atingir capacidade máxima
+            if Pseg>bess_object.Pmax:
+               Pseg = bess_object.Pmax
+               # print('Aqui1')
+               return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emax]
+            else:
+               # print('Aqui2')
+               return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emax]
+
+         else: #Carrega com a potência máxima
+            # print('Aqui3')
+            return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),Bess_E_seg]
+         
+      else: # Potência menor que a potência máxima
+         Pseg = PBessSeg
+         Bess_E_seg = bess_object.Et + Pseg*(timestep/60) # Energia da bateria no instante seguinte
+
+         if Bess_E_seg>bess_object.Emax: #Energia seguinte maior que máxima permitida
+            Pseg = (bess_object.Emax-bess_object.Et)/(timestep/60) #carrega para atingir capacidade máxima
+            if Pseg>bess_object.Pmax:
+               Pseg = bess_object.Pmax
+               # print('Aqui4')
+               return [Pseg, Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emax]
+            else:
+               # print('Aqui5')
+               return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emax]
+
+         else: #Carrega com a potência seguinte definida
+            # print('Aqui6')
+            return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),Bess_E_seg]
+
+    else: # Bateria vai descarregar
+      if PBessSeg<-bess_object.Pmax: #Potência seguinte maior que a maxima
+         Pseg = -bess_object.Pmax
+         Bess_E_seg = bess_object.Et+Pseg*(timestep/60) # Energia da bateria no instante seguinte
+
+         if Bess_E_seg<bess_object.Emin: #Energia seguinte menor que a máxima permitida
+            Pseg = (bess_object.Emin-bess_object.Et)/(timestep/60) #descarregar para atingir no máximo a capacidade mínima
+            if Pseg<-bess_object.Pmax:
+               Pseg = -bess_object.Pmax
+               # print('Aqui7')
+               return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emin]
+            else:
+               # print('Aqui8')
+               return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),bess_object.Emin]
+
+         else: #Descarrega com a potência máxima
+            # print('Aqui9')
+            return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax),Bess_E_seg]
+      else:
+          Pseg = PBessSeg
+          Bess_E_seg = bess_object.Et+(Pseg*(timestep/60)) # Energia da bateria no instante seguinte
+
+          if Bess_E_seg<bess_object.Emin: #Energia seguinte menor que a minima permitida
+              Pseg = (bess_object.Emin-bess_object.Et)/(timestep/60) #descarrega para atingir no máximo a capacidade mínima
+              if Pseg<-bess_object.Pmax:
+                Pseg = -bess_object.Pmax
+               #  print('Aqui10')
+                return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax), bess_object.Emin]
+              else:
+               #  print('Aqui11')
+                return [Pseg,Soc + (Pseg*(timestep/60)/bess_object.Emax), bess_object.Emin]
+
+          else: #Descarrega com a potência máxima
+            #   print('Aqui12')
+              return [Pseg, Soc + (Pseg*(timestep/60)/bess_object.Emax), Bess_E_seg]   
