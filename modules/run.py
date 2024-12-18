@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from modules.read_spreadsheet import read_file_xlsx
 from modules.get_general_informations import get_informations
-from modules.bess import construct_bess,bess_operation
+from modules.bess import construct_bess,bess_operation,simple_bess
 from modules.generator import construct_generators
 from modules.load import construct_loads
 from modules.powerflow import power_flow
@@ -153,7 +153,8 @@ def run(name_spreadsheet,name_dss):
             if i>2: # Next 3 iterations to initiate the operation of bess
                 #Call the function of bess operation and manage all batteries
                 for bess in bess_list:
-                    next_bess_power,soc,energy = bess_operation(i,interval,demand,load_power,gen_power,gen_forec,alpha=0.5,bheta=0.5,sigma=45,bess_object=bess)
+                    # next_bess_power,soc,energy = bess_operation(i,interval,demand,load_power,gen_power,gen_forec,alpha=0.5,bheta=0.5,sigma=45,bess_object=bess)
+                    next_bess_power,soc,energy = simple_bess(i,interval,demand,bess)
                     bess.update_power(next_bess_power)
                     bess.update_energy(energy)
                     bess.update_soc(soc)
