@@ -10,7 +10,7 @@ import numpy as np
 output_csv = os.getcwd() + '/data/output/csv/'
 
 def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
-    # print(f"\nTime: {timestep}")
+
     #Clean the prompt comand of the OpenDSS
     dss.Basic.ClearAll()
     dss.Basic.Start(0)
@@ -29,33 +29,23 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
         load.update_power(timestep)
         dss.Command(add_load(load))
     
-    #Add the batteries to the OpenDSS model
-    # for battery in batteries:
-    #     dss.Command(add_bat(battery))
+    # Add the batteries to the OpenDSS model
+    for battery in batteries:
+        dss.Command(add_bat(battery))
 
     #Solve the power flow
     dss.Solution.Solve()  
 
     # Get voltage values
     voltage = get_bus_voltages(timestep,buses,dss)
-    line_voltage = get_source_voltage(dss)
-    # print(voltage_df)
-
-    
+    line_voltage = get_source_voltage(timestep,dss)
+        
     # Get the power of the buses and the power delivered to the circuit
     bus_power_df,power_df = get_bus_power(buses,timestep,dss)
-    
-    # print('\nPower at Buses:')
-    # print(bus_power_df)
-    # print('\nPower delivered to circuit:')
-    # print(power_df)
-
 
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
-    # print("\nBranch Flows:")
-    # print(branch_df)
-
+  
     return bus_power_df,power_df,branch_df,voltage,line_voltage
 
         
@@ -173,10 +163,19 @@ def get_bus_voltages(timestep,buses,dss):
     return voltage_df
 
 
-def get_source_voltage(dss):
-    # Get the source voltage
+def get_source_voltage(timestep,dss):
+
+    # Create a empty dataframe to store the line voltage during time
+    columns = ['Timestep','Line_Voltage']
+    voltage_df = pd.DataFrame(columns=columns)
+
+    #Extract source line voltage
     dss.Circuit.SetActiveElement('Vsource.source')
     source_voltage = dss.CktElement.VoltagesMagAng()
     line_voltage = source_voltage[0]*np.sqrt(3)
-    return line_voltage
+    #Add to the dataframe
+    new_line = pd.DataFrame([[timestep,round(line_voltage,4)]],columns=columns)
+    voltage_df = pd.concat([voltage_df,new_line],ignore_index=True)
+    
+    return voltage_df
         

@@ -18,7 +18,7 @@ def plot(graph,x,y,title='',xlabel='',ylabel='',figsize=(8,6),grid = True, lines
     Função para plotar um gráfico de linha.
     graph: tipo de gráfico
            'Power': gráfico de potência
-            'Voltage': gráfico de tensão
+           'Voltage': gráfico de tensão
     Parâmetros: x axis for time
                 y axis for power
                 title: name of the plot
@@ -29,8 +29,9 @@ def plot(graph,x,y,title='',xlabel='',ylabel='',figsize=(8,6),grid = True, lines
                 **kwargs: addtinional arguments for the plot like matplotlib.pyplot args
                 for more kwargs informations see: https://matplotlib.org/3.5.3/api/_as_gen/matplotlib.pyplot.html
     """
-    if len(lines)>1:
-        fig = plot_graph_multlines(graph,x,y,lines,grid,title,xlabel,ylabel,figsize,**kwargs)
+    if graph == 'Power':
+        if len(y)>1:
+            fig = plot_graph_multlines(graph,x,y,lines,grid,title,xlabel,ylabel,figsize,**kwargs)
 
     return fig
     
@@ -56,7 +57,7 @@ def plot_graph_multlines(graph,x, y, labels,grid, title, xlabel, ylabel, figsize
 
 def plot_graph(x, y, title='', xlabel='', ylabel='', figsize=(8, 6), **kwargs):
 
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     plt.plot(x, y)
     plt.title(title)
     plt.xlabel(xlabel)
@@ -69,7 +70,7 @@ def plot_graph(x, y, title='', xlabel='', ylabel='', figsize=(8, 6), **kwargs):
     plt.minorticks_on()
 
     
-    plt.show()
+    return fig
 
 def plot_bus_voltages(time,voltage_df,title,xlabel,ylabel,figsize=(8,6),grid=True,**kwargs):
     fig = plt.figure(figsize=figsize)
