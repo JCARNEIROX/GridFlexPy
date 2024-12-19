@@ -1,6 +1,7 @@
-from plots import Plot
-from get_general_informations import GenInformations
+from modules.plots import Plot
+from modules.get_general_informations import GenInformations
 from main import return_general_informations,run_powerflow
+
 # Dicionário com textos para os menus
 menus = {
     "main": """What do you want to do?

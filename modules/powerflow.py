@@ -9,6 +9,7 @@ import numpy as np
 
 output_csv = os.getcwd() + '/data/output/csv/'
 
+
 def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
 
     #Clean the prompt comand of the OpenDSS
@@ -41,14 +42,22 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
     line_voltage = get_source_voltage(timestep,dss)
         
     # Get the power of the buses and the power delivered to the circuit
-    bus_power_df,load,generation,demand,losses = get_bus_power(buses,timestep,dss)
+    bus_power_df,load,generation,losses = get_bus_power(buses,timestep,dss)
+    demand = get_demand(timestep,dss)
 
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
   
     return bus_power_df,load,generation,demand,losses,branch_df,bus_voltage,line_voltage
 
-        
+def get_demand(timestep,dss):
+    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
+
+    #Get the total power delivered to the circuit and total losses
+    total_power = dss.Circuit.TotalPower()
+    demand = pd.DataFrame([[timestep, -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)
+    return demand
 
 def get_bus_power(buses,timestep,dss):
     # print("\nPowers at Buses:")
@@ -115,14 +124,12 @@ def get_bus_power(buses,timestep,dss):
     columns_power = ['Timestep','P(kW)','Q(kvar)']
 
     #Get the total power delivered to the circuit and total losses
-    total_power = dss.Circuit.TotalPower()
     total_losses = dss.Circuit.Losses()# Losses in kW
     load = pd.DataFrame([[timestep, round(load_active_power,4), round(load_reactive_power,4)]], columns=columns_power)
     generation = pd.DataFrame([[timestep, round(gen_active_power,4), round(gen_reactive_power,4)]], columns=columns_power)
-    demand = pd.DataFrame([[timestep, -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)
     losses = pd.DataFrame([[timestep, round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)
                          
-    return bus_power_df,load,generation,demand,losses
+    return bus_power_df,load,generation,losses
 
 def display_branch_flows(timestep,dss):
     # print("\nFlows in Branches:")
