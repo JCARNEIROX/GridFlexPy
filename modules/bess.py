@@ -17,7 +17,7 @@ def add_bat(Bess):
     Eff = Bess.Efficiency*100
     soc_min = Bess.soc_min
 
-    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWrated={Pmax} kWhRated={Emax} %stored={SOC} %EffCharge={Eff} %EffDischarge={Eff} %reserve={soc_min}"
+    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} kV={kV} kW={kW} kWrated={Pmax} kWhRated={Emax} %stored={SOC} %EffCharge={Eff} %IdlingkW=1 %EffDischarge={Eff} %reserve={soc_min}"
     # new_bat = f"New Load.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} Conn=wye kV={kV} kW={kW} kVAr=0 Model=1 Vminpu=0.92"
     
     return new_bat

@@ -37,16 +37,16 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
     dss.Solution.Solve()  
 
     # Get voltage values
-    voltage = get_bus_voltages(timestep,buses,dss)
+    bus_voltage = get_bus_voltages(timestep,buses,dss)
     line_voltage = get_source_voltage(timestep,dss)
         
     # Get the power of the buses and the power delivered to the circuit
-    bus_power_df,power_df = get_bus_power(buses,timestep,dss)
+    bus_power_df,load,generation,demand,losses = get_bus_power(buses,timestep,dss)
 
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
   
-    return bus_power_df,power_df,branch_df,voltage,line_voltage
+    return bus_power_df,load,generation,demand,losses,branch_df,bus_voltage,line_voltage
 
         
 
@@ -112,22 +112,17 @@ def get_bus_power(buses,timestep,dss):
         # print(f"{bus}\t{active_power:.4f}\t\t{reactive_power:.4f}")
 
     #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
-    columns_power = ['Timestep','Name','P(kW)','Q(kvar)']
-    power_df = pd.DataFrame(columns=columns_power)
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
 
     #Get the total power delivered to the circuit and total losses
     total_power = dss.Circuit.TotalPower()
     total_losses = dss.Circuit.Losses()# Losses in kW
-    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Load', round(load_active_power,4), round(load_reactive_power,4)]], columns=columns_power)], ignore_index=True)
-    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Generation', round(gen_active_power,4), round(gen_reactive_power,4)]], columns=columns_power)], ignore_index=True)
-    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Demand', -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)], ignore_index=True)
-    power_df = pd.concat([power_df, pd.DataFrame([[timestep, 'Total Losses', round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)], ignore_index=True)
+    load = pd.DataFrame([[timestep, round(load_active_power,4), round(load_reactive_power,4)]], columns=columns_power)
+    generation = pd.DataFrame([[timestep, round(gen_active_power,4), round(gen_reactive_power,4)]], columns=columns_power)
+    demand = pd.DataFrame([[timestep, -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)
+    losses = pd.DataFrame([[timestep, round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)
                          
-    # # Exibe as potências totais do sistema
-    # print("\nTotal Active Power (kW): {:.4f}".format(total_active_power))
-    # print("Total Reactive Power (kvar): {:.4f}".format(total_reactive_power))
-
-    return bus_power_df,power_df
+    return bus_power_df,load,generation,demand,losses
 
 def display_branch_flows(timestep,dss):
     # print("\nFlows in Branches:")

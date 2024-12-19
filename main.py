@@ -16,13 +16,17 @@ if __name__ == '__main__':
 
     name_spreadsheet = 'teste_sheet.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
     name_dss = 'ModelagemTeste.dss' # Name of your main dss_file in directory data/dss_files
+    kind = 'NoOperation' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing'
 
     # Run the power flow
-    bus_power,power_df,branch_df,voltage_df,line_voltage,bess_powers,time = run(name_spreadsheet,name_dss)
+    bus_power,load_df,generation_df,demand_df,losses_df,branch_df,voltage_df,line_voltage,bess_powers,time = run(name_spreadsheet,name_dss,kind='NoOperation')
 
     # Save the results in a csv file
-    save_csv(bus_power,'bus_power_BESS',output_csv)
-    save_csv(power_df,'power_df_BESS',output_csv)
+    save_csv(bus_power,'bus_power',output_csv)
+    save_csv(load_df,'load',output_csv)
+    save_csv(generation_df,'generation',output_csv)
+    save_csv(demand_df,'demand',output_csv)
+    save_csv(losses_df,'losses',output_csv)
     save_csv(branch_df,'branch_df_BESS',output_csv)
     save_csv(voltage_df,'voltage_df_BESS',output_csv)
     save_csv(line_voltage,'line_voltage_BESS',output_csv)
