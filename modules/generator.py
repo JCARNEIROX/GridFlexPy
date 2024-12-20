@@ -40,25 +40,25 @@ def construct_generators(generators):
     return list_generators_objects
 
 
-def get_GenPower(dss,bus):
+def get_GenPower(dss,timestep):
     """
     Get the power of the generators in the circuit.
     Returns a two double array with the power of the loads and bus power
     """
     elements = dss.Circuit.AllElementNames()
-    generators = [element for element in elements if element.startswith("Generator.") and bus in element]
+    generators = [element for element in elements if element.startswith("Generator.")]
 
     gen_power = [0,0]
-    bus_power = [0,0]
     for gen in generators:
             dss.Circuit.SetActiveElement(gen)
             powers = dss.CktElement.Powers()
             gen_power[0] -= sum(powers[::2])  # Sum the active power
             gen_power[1] -= sum(powers[1::2])  # Sum reactive power
-
-            bus_power[0] += sum(powers[::2])  # Sum the active power at bus
-            bus_power[1] += sum(powers[1::2])  # Sum the reactive power at bus
-    return gen_power,bus_power
+    
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
+    gen_line = pd.DataFrame([[timestep, round(gen_power[0],4),round(gen_power[1],4)]], columns=columns_power)
+    
+    return gen_line
             
 class Generator:
     def __init__(self, id,buss_node,phases,kV,Conn,Pf,Model,Profile,Terminals,kW=0):

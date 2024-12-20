@@ -38,15 +38,14 @@ def construct_loads(loads):
     
     return list_loads_objects
 
-def get_LoadPower(dss,bus):
+def get_LoadPower(dss,timestep):
     """
     Get the power of the loads in the circuit.
     Returns a two double array with the power of the loads and bus power
     """
     elements = dss.Circuit.AllElementNames()
-    loads = [element for element in elements if element.startswith("Load.") and bus in element]
+    loads = [element for element in elements if element.startswith("Load.load_")]
     load_power = [0,0]
-    bus_power = [0,0]
     
     for load in loads:
             dss.Circuit.SetActiveElement(load)
@@ -54,10 +53,9 @@ def get_LoadPower(dss,bus):
             load_power[0] += sum(powers[::2])  # Sum the active power
             load_power[1] += sum(powers[1::2])  # Sum the reactive
 
-            bus_power[0] += sum(powers[::2])  # Sum the active power at bus
-            bus_power[1] += sum(powers[1::2])  # Sum the reactive power at bus
-
-    return load_power,bus_power
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
+    load_line = pd.DataFrame([[timestep, round(load_power[0],4),round(load_power[1],4)]], columns=columns_power)
+    return load_line
 
 class Load:
     def __init__(self, id,buss_node,phases,Conn,kV,Pf,Pmax,Model,Class,Vminpu,Terminals, ZIPV=(0.5, 0, 0.5, 1, 0, 0, 0.5),kW=0):

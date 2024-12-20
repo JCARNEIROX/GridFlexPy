@@ -42,39 +42,29 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
     line_voltage = get_source_voltage(timestep,dss)
         
     # Get the power of the buses and the power delivered to the circuit
-    bus_power_df,load,generation,losses = get_bus_power(buses,timestep,dss)
+    load = get_LoadPower(dss,timestep)
+    generation = get_GenPower(dss,timestep)
+    bess = get_BessPower(dss,timestep)
     demand = get_demand(timestep,dss)
+    losses = get_losses(timestep,dss)
+    bus_power_df = get_bus_power(buses,timestep,dss)
+    
+    
+    
 
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
   
-    return bus_power_df,load,generation,demand,losses,branch_df,bus_voltage,line_voltage
+    return load,generation,bess,demand,losses,bus_power_df,bus_voltage,line_voltage,branch_df
 
-def get_demand(timestep,dss):
-    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
-    columns_power = ['Timestep','P(kW)','Q(kvar)']
 
-    #Get the total power delivered to the circuit and total losses
-    total_power = dss.Circuit.TotalPower()
-    demand = pd.DataFrame([[timestep, -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)
-    return demand
 
 def get_bus_power(buses,timestep,dss):
-    # print("\nPowers at Buses:")
-    # print("Bus\tActive Power (kW)\tReactive Power (kvar)")
-
-    # Powers
-    load_active_power = 0
-    load_reactive_power = 0
-
-    gen_active_power = 0
-    gen_reactive_power = 0
-
+  
+    #Initializate the powers
     battery_active_power = 0
     battery_reactive_power = 0
     
-    
-
     #Create a empty dataframe to store the active/reactive power demand at each bus
     columns_bus = ['Timestep','Bus','P(kW)','Q(kvar)']
     bus_power_df = pd.DataFrame(columns=columns_bus)
@@ -85,51 +75,32 @@ def get_bus_power(buses,timestep,dss):
         bus_active_power = 0
         bus_reactive_power = 0
 
-        # Extract the power of loads in actual bus and their contribuition for the bus power
-        load_power,bus_power = get_LoadPower(dss,bus)
-        #Sum the load power
-        load_active_power += load_power[0]
-        load_reactive_power += load_power[1]
+        elements = dss.Circuit.AllElementNames()
+        bus_elements = [element for element in elements if bus in element]
 
-        #Sum the bus power
-        bus_active_power += bus_power[0]  # Sum the active power at bus
-        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
-
-        # Extract the power of generators in actual bus and their contribuition for the bus power
-        gen_power,bus_power = get_GenPower(dss,bus)
-        
-        #Sum the generators power
-        gen_active_power += gen_power[0]
-        gen_reactive_power += gen_power[1]
-        #Sum the bus power
-        bus_active_power += bus_power[0]  # Sum the active power at bus
-        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
-
-        # Extract the power of batteries in actual bus and their contribuition for the bus power
-        bess_power,bus_power = get_BessPower(dss,bus)
-        
-        #Sum the generators power
-        battery_active_power += bess_power[0]
-        battery_reactive_power += bess_power[1]
-        #Sum the bus power
-        bus_active_power += bus_power[0]  # Sum the active power at bus
-        bus_reactive_power += bus_power[1]  # Sum the reactive power at bus
+        for element in bus_elements:
+            if 'Load.' in element:
+                dss.Circuit.SetActiveElement(element)
+                powers = dss.CktElement.Powers()
+                bus_active_power += sum(powers[::2])
+                bus_reactive_power += sum(powers[1::2])
+            elif 'Generator.' in element:
+                dss.Circuit.SetActiveElement(element)
+                powers = dss.CktElement.Powers()
+                bus_active_power -= sum(powers[::2])
+                bus_reactive_power -= sum(powers[1::2])
+            elif 'Storage.' in element:
+                dss.Circuit.SetActiveElement(element)
+                powers = dss.CktElement.Powers()
+                battery_active_power += sum(powers[::2])
+                battery_reactive_power += sum(powers[1::2])
         
         # Store the total sum of active and reactive power in actual bus at timestep
         new_line_bus = pd.DataFrame([[timestep, bus, round(bus_active_power,4),round(bus_reactive_power,4)]], columns=columns_bus)
         bus_power_df = pd.concat([bus_power_df,new_line_bus],ignore_index=True)
         # print(f"{bus}\t{active_power:.4f}\t\t{reactive_power:.4f}")
 
-    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
-    columns_power = ['Timestep','P(kW)','Q(kvar)']
-
-    #Get the total power delivered to the circuit and total losses
-    total_losses = dss.Circuit.Losses()# Losses in kW
-    load = pd.DataFrame([[timestep, round(load_active_power,4), round(load_reactive_power,4)]], columns=columns_power)
-    generation = pd.DataFrame([[timestep, round(gen_active_power,4), round(gen_reactive_power,4)]], columns=columns_power)
-    losses = pd.DataFrame([[timestep, round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)
-                         
-    return bus_power_df,load,generation,losses
+    return bus_power_df
 
 def display_branch_flows(timestep,dss):
     # print("\nFlows in Branches:")
@@ -181,3 +152,21 @@ def get_source_voltage(timestep,dss):
     
     return voltage_df
         
+
+def get_demand(timestep,dss):
+    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
+
+    #Get the total power delivered to the circuit and total losses
+    total_power = dss.Circuit.TotalPower()
+    demand = pd.DataFrame([[timestep, -round(total_power[0],4), -round(total_power[1],4)]], columns=columns_power)
+    return demand
+
+def get_losses(timestep,dss):
+    #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep
+    columns_power = ['Timestep','P(kW)','Q(kvar)']
+
+    #Get the total power delivered to the circuit and total losses
+    total_losses = dss.Circuit.Losses()# Losses in kW
+    losses = pd.DataFrame([[timestep, round(total_losses[0]/1000,4), round(total_losses[1]/1000,4)]], columns=columns_power)
+    return losses
