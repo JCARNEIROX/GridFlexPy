@@ -214,12 +214,13 @@ def bess_operation_load(i,timestep,demand,load,gen_power,gen_forec,alpha,bheta,s
           
 def bess_operation(i, timestep, demand, load, gen_power, gen_forec, alpha, bheta, sigma, bess_object):
     # Values for PV generation
-    pv_med = np.mean(gen_power[i - 3:i])
-    next_pv = (alpha * gen_forec) + (bheta * pv_med)  # Weighting for the forecasting of PV generation
+    # pv_med = np.mean(gen_power[i - 3:i])
+    # next_pv = (alpha * gen_forec) + (bheta * pv_med)  # Weighting for the forecasting of PV generation
 
     # Mean of the previous 3 time steps
-    load_prev = np.mean(load[i - 3:i])
-    next_demand = load_prev - next_pv
+    # load_prev = np.mean(load[i - 3:i])
+    # next_demand = load_prev - next_pv
+    next_demand = demand[i+1]
 
     # Values of demand
     actual_demand = demand[i]
@@ -235,48 +236,51 @@ def bess_operation(i, timestep, demand, load, gen_power, gen_forec, alpha, bheta
     # Actual state of charge of battery
     Soc = bess_object.SOC
 
-    if PBessSeg > 0:  # Battery discharging
-        if PBessSeg > bess_object.Pmax:  # Next power greater than maximum
+    if PBessSeg > 0:  # Bateria vai descarregar
+        state = 'DISCHARGING'
+        if PBessSeg > bess_object.Pmax:  # Potência seguinte maior que a máxima
             Pseg = bess_object.Pmax
-            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * (1 / bess_object.Efficiency)
+            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * (1 / bess_object.Efficiency)  # Energia da bateria no instante seguinte
 
-            if Bess_E_seg < bess_object.Emin:  # Next energy less than minimum allowed
-                Pseg = (bess_object.Et - bess_object.Emin) / (timestep / 60)
-                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), bess_object.Emin]
-            
-            else:
-                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg]
+            if Bess_E_seg < bess_object.Emin:  # Energia seguinte menor que a mínima permitida
+                Pseg = (bess_object.Et - bess_object.Emin) / (timestep / 60)  # Descarregar para atingir no máximo a capacidade mínima
+                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), bess_object.Emin,state]
+        
+            else:  # Descarrega com a potência máxima e a energia seguinte é a calculada
+                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg,state]
         else:
             Pseg = PBessSeg
-            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * (1 / bess_object.Efficiency)
+            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * (1 / bess_object.Efficiency)  # Energia da bateria no instante seguinte
 
-            if Bess_E_seg < bess_object.Emin:  # Next energy less than minimum allowed
-                Pseg = (bess_object.Et - bess_object.Emin) / (timestep / 60)
-                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), bess_object.Emin]
+            if Bess_E_seg < bess_object.Emin:  # Energia seguinte menor que a mínima permitida
+                Pseg = (bess_object.Et - bess_object.Emin) / (timestep / 60)  # Descarregar para atingir no máximo a capacidade mínima
+                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), bess_object.Emin,state]
+        
+            else:  # Descarrega com a potência máxima e a energia seguinte é a calculada
+                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg,state]
+
+    else:  # Bateria vai carregar
+        state = 'CHARGING'
+        if PBessSeg < -bess_object.Pmax:  # Potência seguinte maior que a máxima
+            Pseg = bess_object.Pmax
+            Bess_E_seg = bess_object.Et + Pseg * (timestep / 60) * bess_object.Efficiency  # Energia da bateria no instante seguinte
+
+            if Bess_E_seg > bess_object.Emax:  # Energia seguinte maior que a máxima permitida
+                Pseg = (bess_object.Emax - bess_object.Et) / (timestep / 60)  # Carregar para atingir no máximo a capacidade mínima
+                return [-Pseg, Soc + (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), bess_object.Emax,state]
             
-            else:
-                return [Pseg, Soc - (Pseg * (timestep / 60) * (1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg]
-
-    else:  # Battery charging
-        if PBessSeg < -bess_object.Pmax:
-            Pseg = -bess_object.Pmax
-            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * bess_object.Efficiency
-
-            if Bess_E_seg > bess_object.Emax:
-                Pseg = -(bess_object.Emax - bess_object.Et) / (timestep / 60)
-                return [Pseg, Soc - (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), bess_object.Emax]
-            else:
-                return [Pseg, Soc - (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), Bess_E_seg]
+            else:  # Carrega com a potência máxima
+                return [-Pseg, Soc + (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), Bess_E_seg,state]
         else:
-            Pseg = PBessSeg
-            Bess_E_seg = bess_object.Et - Pseg * (timestep / 60) * bess_object.Efficiency
+            Pseg = -PBessSeg
+            Bess_E_seg = bess_object.Et + Pseg * (timestep / 60) * bess_object.Efficiency  # Energia da bateria no instante seguinte
 
-            if Bess_E_seg > bess_object.Emax:
-                Pseg = -(bess_object.Emax - bess_object.Et) / (timestep / 60)
-
-                return [Pseg, Soc - (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), bess_object.Emax]
-            else:
-                return [Pseg, Soc - (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), Bess_E_seg]
+            if Bess_E_seg > bess_object.Emax:  # Energia seguinte maior que a máxima permitida
+                Pseg = (bess_object.Emax - bess_object.Et) / (timestep / 60)  # Carregar para atingir no máximo a capacidade mínima
+                return [-Pseg, Soc + (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), bess_object.Emax,state]
+            
+            else:  # Carrega com a potência máxima
+                return [-Pseg, Soc + (Pseg * (timestep / 60) * bess_object.Efficiency / bess_object.Cmax), Bess_E_seg,state]
  
 
 

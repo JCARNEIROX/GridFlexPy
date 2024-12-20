@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     name_spreadsheet = 'teste_sheet.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
     name_dss = 'ModelagemTeste.dss' # Name of your main dss_file in directory data/dss_files
-    kind = 'Simple' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing'
+    kind = 'Smoothing' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing'
     bess_bus = 4
 
     # Run the power flow

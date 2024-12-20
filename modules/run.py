@@ -143,22 +143,22 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
                 gen_forec = pv_forec[i+1]
                 # Extract the values from column "Demand" in power_df1 dataframe
                 demand = demand_df1['P(kW)'].values
-                demand_forec = demand_prev[i]
+                demand_forec = demand_prev
                 # Extract the values from column "Losses" in power_df1 dataframe
                 losses = losses_df1['P(kW)'].values
 
                 # Define the next power of BESS based on the operation
                 if kind == 'Smoothing':
                     for bess in bess_list:
-                        next_bess_power,soc,energy = bess_operation(i,interval,demand,load_power,gen_power,gen_forec,alpha=0.5,bheta=0.5,sigma=45,bess_object=bess)
+                        next_bess_power,soc,energy,state = bess_operation(i,interval,demand_forec,load_power,gen_power,gen_forec,alpha=0.5,bheta=0.5,sigma=45,bess_object=bess)
                         bess.update_power(next_bess_power)
                         bess.update_energy(energy)
                         bess.update_soc(soc)
+                        bess.update_state(state)
                         bess.update_bus(bus)
 
                 elif kind == 'Simple':
                     for bess in bess_list:
-                        # next_bess_power,soc,energy = simple_bess_load(interval,demand_forec,bess) # Voltar depois para demand e na função de operação
                         next_bess_power,soc,energy,state = simple_bess(interval,demand_forec,bess) # Voltar depois para demand e na função de operação
                         bess.update_power(next_bess_power)
                         bess.update_energy(energy)
