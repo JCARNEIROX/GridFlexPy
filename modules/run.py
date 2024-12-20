@@ -63,7 +63,7 @@ def run_powerflow(file_dss):
 
 
 
-def run(name_spreadsheet,name_dss,kind='Smooth'):
+def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
         
     # Read the file and
     file_contents = read_file_xlsx(path_xlsx+name_spreadsheet)
@@ -154,6 +154,7 @@ def run(name_spreadsheet,name_dss,kind='Smooth'):
                         bess.update_power(next_bess_power)
                         bess.update_energy(energy)
                         bess.update_soc(soc)
+                        bess.update_bus(bus)
 
                 elif kind == 'Simple':
                     for bess in bess_list:
@@ -163,11 +164,13 @@ def run(name_spreadsheet,name_dss,kind='Smooth'):
                         bess.update_energy(energy)
                         bess.update_soc(soc)
                         bess.update_state(state)
+                        bess.update_bus(bus)
             
-                elif kind == 'NoOperation':
-                    for bess in bess_list:
-                        new_line_bess = pd.DataFrame([[timestep, bess.id, round(bess.Pt,4),round(bess.Et,4),round(bess.SOC,4)]], columns=columns_bess)
-                        bess_power_df = pd.concat([bess_power_df,new_line_bess],ignore_index=True)
+                # elif kind == 'NoOperation':
+                #     for bess in bess_list:
+                #         bess.update_bus(bus)
+                #         new_line_bess = pd.DataFrame([[timestep, bess.id, round(bess.Pt,4),round(bess.Et,4),round(bess.SOC,4)]], columns=columns_bess)
+                #         bess_power_df = pd.concat([bess_power_df,new_line_bess],ignore_index=True)
                 
                 # Run the power flow with the operation of the BESS
                 load,generation,bess,demand_df,losses,bus_power,bus_voltage,line_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
@@ -184,6 +187,10 @@ def run(name_spreadsheet,name_dss,kind='Smooth'):
                 bess_power_df = pd.concat([bess_power_df,bess],ignore_index=True) # Store the power of the BESS
 
             else:
+                # Update bus_node for BESS
+                for bess in bess_list:
+                    bess.update_bus(bus)
+
                 # Run the power flow with the operation of the BESS
                 load,generation,bess,demand_df,losses,bus_power,bus_voltage,line_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
 

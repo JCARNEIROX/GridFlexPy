@@ -17,20 +17,21 @@ if __name__ == '__main__':
     name_spreadsheet = 'teste_sheet.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
     name_dss = 'ModelagemTeste.dss' # Name of your main dss_file in directory data/dss_files
     kind = 'Simple' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing'
+    bess_bus = 4
 
     # Run the power flow
-    bus_power,load_df,generation_df,demand_df,losses_df,branch_df,voltage_df,line_voltage,bess_powers,time = run(name_spreadsheet,name_dss,kind=kind)
+    bus_power,load_df,generation_df,demand_df,losses_df,branch_df,voltage_df,line_voltage,bess_powers,time = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
 
     # Save the results in a csv file
-    save_csv(bus_power,f'bus_power_{kind}',output_csv)
-    save_csv(load_df,f'load_{kind}',output_csv)
-    save_csv(generation_df,f'generation_{kind}',output_csv)
-    save_csv(demand_df,f'demand_{kind}',output_csv)
-    save_csv(losses_df,f'losses_{kind}',output_csv)
-    save_csv(branch_df,f'branch_df_{kind}',output_csv)
-    save_csv(voltage_df,f'voltage_df_{kind}',output_csv)
-    save_csv(line_voltage,f'line_voltage_{kind}',output_csv)
-    save_csv(bess_powers,f'bess_powers_{kind}',output_csv)
+    save_csv(bus_power,f'bus_power_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(load_df,f'load_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(generation_df,f'generation_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(demand_df,f'demand_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(losses_df,f'losses_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(branch_df,f'branch_df_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(voltage_df,f'voltage_df_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(line_voltage,f'line_voltage_{kind}_buss_{bess_bus}',output_csv)
+    save_csv(bess_powers,f'bess_powers_{kind}_buss_{bess_bus}',output_csv)
 
     #Plot data
     # powers = plot('Power',time,power_df,title='Powers on Circuit',xlabel='Time(h)',ylabel='Power(kW)',figsize=(8,6),grid=True,lines=['Load','Generation','Demand'])

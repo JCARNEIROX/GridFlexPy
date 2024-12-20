@@ -107,6 +107,9 @@ class Bess:
     
     def update_state(self,state):
         self.state = state
+    
+    def update_bus(self,bus):
+        self.bus_node = bus
         
 
 def bess_operation_load(i,timestep,demand,load,gen_power,gen_forec,alpha,bheta,sigma,bess_object):
