@@ -13,10 +13,11 @@ def add_gd(Generator):
     kV = Generator.kV
     Conn = Generator.Conn
     kW = Generator.kW
+    Pmax = Generator.Pmax
     Pf = Generator.Pf
     model = Generator.Model
 
-    new_gd = f"New Generator.Gen_{name}_bus_{bus} bus1=bus_{bus} Phases={phases} kV={kV} Conn={Conn} kW={kW} Pf={Pf} Model={model}"
+    new_gd = f"New Generator.Gen_{name}_bus_{bus} bus1=bus_{bus} Phases={phases} kV={kV} Conn={Conn} kW={kW*Pmax} Pf={Pf} Model={model}"
 
     return new_gd
 
@@ -34,7 +35,7 @@ def construct_generators(generators):
 
     for _, row in generators.iterrows():
         generator = Generator(row['Id'], row['Bus_node'], row['Phases'], row['kV'], 
-                              row['Conn'], row['Pf'], row['Model'], row['Profile'], row['Terminals'])
+                              row['Conn'], row['Pmax'], row['Pf'], row['Model'], row['Profile'], row['Terminals'])
         list_generators_objects.append(generator)
 
     return list_generators_objects
@@ -61,12 +62,13 @@ def get_GenPower(dss,timestep):
     return gen_line
             
 class Generator:
-    def __init__(self, id,buss_node,phases,kV,Conn,Pf,Model,Profile,Terminals,kW=0):
+    def __init__(self, id,buss_node,phases,kV,Conn,Pmax,Pf,Model,Profile,Terminals,kW=0):
         self.id = id
         self.bus_node = buss_node
         self.phases = phases
         self.kV = kV
         self.Conn = Conn
+        self.Pmax = Pmax
         self.kW = kW
         self.Pf = Pf
         self.Model = Model

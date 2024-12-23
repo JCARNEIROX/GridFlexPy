@@ -13,6 +13,7 @@ def add_load(Load):
   Conn = Load.Conn
   kV = Load.kV
   kW = Load.kW
+  Pmax = Load.Pmax
   Pf = Load.Pf
   model = Load.Model
   classe = Load.Class
@@ -20,7 +21,7 @@ def add_load(Load):
   ZIPV = Load.ZIPV
   conductors = ".".join(map(str, Terminals))
 
-  new_load = f"New Load.Load_{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW={kW} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
+  new_load = f"New Load.Load_{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW={kW*Pmax} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
 #   new_load = f"New Load.Load_{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW=5 Pf=1 Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
 
   return new_load
@@ -33,7 +34,7 @@ def construct_loads(loads):
     list_loads_objects = []
 
     for _, row in loads.iterrows():
-        load = Load(row['Id'], row['Bus_node'], row['Phases'], row['Conn'], row['kV'], row['Pf'], row['Pmax'], row['Model'], row['Class'], row['Vminpu'], row['Terminals'])
+        load = Load(row['Id'].split('.')[0], row['Bus_node'], row['Phases'], row['Conn'], row['kV'], row['Pf'], row['Pmax'], row['Model'], row['Class'], row['Vminpu'], row['Terminals'])
         list_loads_objects.append(load)
     
     return list_loads_objects

@@ -12,6 +12,8 @@ New LineGeometry.Geometria  Nconds=3  Spacing=N1 Wires=[Fios, Fios, Fios] Reduce
 New Line.Line_001_002 Bus1=bus_001 Bus2=bus_002 Length=25 Units=m Geometry=Geometria phases=3
 New Line.Line_002_003 Bus1=bus_002 Bus2=bus_003 Length=25 Units=m Geometry=Geometria phases=3
 New Line.Line_003_004 Bus1=bus_003 Bus2=bus_004 Length=25 Units=m Geometry=Geometria phases=3
+New Line.Line_004_005 Bus1=bus_004 Bus2=bus_005 Length=25 Units=m Geometry=Geometria phases=3
+
     
 !! Outras informações
 MakeBusList

@@ -284,10 +284,10 @@ def bess_operation(i, timestep, demand, load, gen_power, gen_forec, alpha, bheta
  
 
 
-def simple_bess(timestep, demand,bess_object):
+def simple_bess(i,timestep, demand,bess_object):
 
     # Calculate the next demand based on mean of the previous 3 time steps
-    PBessSeg = demand
+    PBessSeg = demand[i]
     Soc = bess_object.SOC
     if PBessSeg > 0:  # Bateria vai descarregar
         state = 'DISCHARGING'
