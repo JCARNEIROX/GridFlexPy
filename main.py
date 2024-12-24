@@ -20,7 +20,7 @@ if __name__ == '__main__':
     bess_bus = 1
 
     # Run the power flow
-    bus_power,load_df,generation_df,demand_df,losses_df,branch_df,bus_voltage_df,linePU_voltage,bess_powers,time = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
+    bus_power,load_df,generation_df,demand_df,losses_df,branch_df,bus_voltage_df,bess_powers,time = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
 
     # Save the results in a csv file
     if not kind == 'NoOperation':
@@ -31,7 +31,6 @@ if __name__ == '__main__':
         save_csv(losses_df,f'losses_{kind}_bus{bess_bus}',output_csv + 'losses/')
         save_csv(branch_df,f'branch_df_{kind}_bus{bess_bus}',output_csv + 'branch_flows/')
         save_csv(bus_voltage_df,f'bus_voltage_df_{kind}_bus{bess_bus}',output_csv + 'bus_voltage/')
-        save_csv(linePU_voltage,f'linePU_voltage_{kind}_bus{bess_bus}',output_csv + 'line_voltage/')
         save_csv(bess_powers,f'bess_powers_{kind}_bus{bess_bus}',output_csv + 'bess/')
     else:
         save_csv(bus_power,f'bus_power_{kind}',output_csv + 'bus_power/')
@@ -41,7 +40,6 @@ if __name__ == '__main__':
         save_csv(losses_df,f'losses_{kind}',output_csv + 'losses/')
         save_csv(branch_df,f'branch_df_{kind}',output_csv + 'branch_flows/')
         save_csv(bus_voltage_df,f'bus_voltage_df_{kind}',output_csv + 'bus_voltage/')
-        save_csv(linePU_voltage,f'linePU_voltage_{kind}',output_csv + 'line_voltage/')
         save_csv(bess_powers,f'bess_powers_{kind}',output_csv + 'bess/')
 
     #Plot data

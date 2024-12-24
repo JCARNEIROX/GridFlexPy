@@ -39,7 +39,6 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
 
     # Get voltage values
     bus_voltage = get_bus_voltages(timestep,buses,dss)
-    linePU_voltage = get_source_voltage_pu(timestep,dss)
         
     # Get the power of the buses and the power delivered to the circuit
     load = get_LoadPower(dss,timestep)
@@ -55,7 +54,7 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
   
-    return load,generation,bess,demand,losses,bus_power_df,bus_voltage,linePU_voltage,branch_df
+    return load,generation,bess,demand,losses,bus_power_df,bus_voltage,branch_df
 
 
 
@@ -126,32 +125,18 @@ def display_branch_flows(timestep,dss):
 def get_bus_voltages(timestep,buses,dss):
     
     #Create a empty dataframe to store the voltages
-    voltages = dss.Circuit.AllBusVMag()  # List of all bus voltages
-    columns = ['Timestep','Bus','Voltage']
+    columns = ['Timestep','Bus','Voltage (p.u.)']
     voltage_df = pd.DataFrame(columns=columns)
-    for bus, voltage in zip(buses, voltages):
-        new_line = pd.DataFrame([[timestep, bus, round(voltage,4)]], columns=columns)
+
+    for bus in buses:
+        dss.Circuit.SetActiveBus(bus)
+        voltages = dss.Bus.puVLL()
+        pu_voltage = np.sqrt(voltages[0]**2 + voltages[1]**2)
+        new_line = pd.DataFrame([[timestep, bus, round(pu_voltage,4)]], columns=columns)
         voltage_df = pd.concat([voltage_df, new_line], ignore_index=True)
-
-    return voltage_df
-
-
-def get_source_voltage_pu(timestep,dss):
-
-    # Create a empty dataframe to store the line voltage during time
-    columns = ['Timestep','Voltage (p.u.)']
-    voltage_df = pd.DataFrame(columns=columns)
-
-    #Extract source line voltage
-    dss.Circuit.SetActiveBus('bus_001') ## Alterar conforme a rede
-    source_voltage = dss.Bus.puVLL()
-    line_voltage = np.sqrt(source_voltage[0]**2 + source_voltage[1]**2)
-    #Add to the dataframe
-    new_line = pd.DataFrame([[timestep,round(line_voltage,4)]],columns=columns)
-    voltage_df = pd.concat([voltage_df,new_line],ignore_index=True)
     
     return voltage_df
-        
+
 
 def get_demand(timestep,dss):
     #Create a empty dataframe to store the active/reactive power delivered to circuit and the losses at actual timestep

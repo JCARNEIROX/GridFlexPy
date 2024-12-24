@@ -63,7 +63,7 @@ def run_powerflow(file_dss):
 
 
 
-def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
+def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         
     # Read the file and
     file_contents = read_file_xlsx(path_xlsx+name_spreadsheet)
@@ -73,7 +73,7 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
     pv_forec = file_pv["Ppower"].values
 
     # Read the file of forecasted demand
-    file_demand = pd.read_csv(output_csv +'demand/' + f'demand_NoOperation.csv')
+    file_demand = pd.read_csv(output_csv +'demand/' + f'demand_NoOperation_prev.csv')
     demand_prev = file_demand["P(kW)"].values
 
     # Get the content of each page of the spreadsheet
@@ -111,12 +111,8 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
     branch_df1 = pd.DataFrame(columns=columns_branch)
 
     #Create a empty dataframe to store the voltages
-    columns_bus_voltage = ['Timestep','Bus','Voltage']
+    columns_bus_voltage = ['Timestep','Bus','Voltage (p.u.)']
     voltage_df1 = pd.DataFrame(columns=columns_bus_voltage)
-
-    #Create a empty dataframe to store the source line voltage
-    columns_voltage = ['Timestep','Line_Voltage']
-    voltagePU_line_df = pd.DataFrame(columns=columns_voltage)
 
     #Create a empty dataframe to store the bateries power
     columns_bess = ['Timestep','Bess_Id','P(kW)','Q(kVar)','E(kWh)','SOC']
@@ -173,7 +169,7 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
                 #         bess_power_df = pd.concat([bess_power_df,new_line_bess],ignore_index=True)
                 
                 # Run the power flow with the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,linePU_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
 
                 # Concatenate the new lines in their dataframes
                 bus_power_df1 = pd.concat([bus_power_df1,bus_power],ignore_index=True) # Store the power at each bus
@@ -183,7 +179,6 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
                 demand_df1 = pd.concat([demand_df1,demand_df],ignore_index=True) # Store the demand in the circuit
                 losses_df1 = pd.concat([losses_df1,losses],ignore_index=True) # Store the total losses
                 branch_df1 = pd.concat([branch_df1,branch_df],ignore_index=True) # Store the branch flows
-                voltagePU_line_df = pd.concat([voltagePU_line_df,linePU_voltage],ignore_index=True) # Store the line voltage of source voltage
                 bess_power_df = pd.concat([bess_power_df,bess],ignore_index=True) # Store the power of the BESS
 
             else:
@@ -192,7 +187,7 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
                     bess.update_bus(bus)
 
                 # Run the power flow with the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,linePU_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
 
                 # Concatenate the new lines in their dataframes
                 bus_power_df1 = pd.concat([bus_power_df1,bus_power],ignore_index=True) # Store the power at each bus
@@ -202,12 +197,11 @@ def run(name_spreadsheet,name_dss,bus,kind='Smooth'):
                 demand_df1 = pd.concat([demand_df1,demand_df],ignore_index=True) # Store the demand in the circuit
                 losses_df1 = pd.concat([losses_df1,losses],ignore_index=True) # Store the total losses
                 branch_df1 = pd.concat([branch_df1,branch_df],ignore_index=True) # Store the branch flows
-                voltagePU_line_df = pd.concat([voltagePU_line_df,linePU_voltage],ignore_index=True) # Store the line voltage of source voltage
                 bess_power_df = pd.concat([bess_power_df,bess],ignore_index=True) # Store the power of the BESS
 
         print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
 
-    return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,voltagePU_line_df,bess_power_df,time_range
+    return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,bess_power_df,time_range
     
 
 
