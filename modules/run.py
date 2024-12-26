@@ -73,7 +73,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     pv_forec = file_pv["Ppower"].values
 
     # Read the file of forecasted demand
-    file_demand = pd.read_csv(output_csv +'demand/' + f'demand_NoOperation_prev.csv')
+    file_demand = pd.read_csv(output_csv +'demand/' + f'demand_NoOperation_year.csv')
     demand_prev = file_demand["P(kW)"].values
 
     # Get the content of each page of the spreadsheet
