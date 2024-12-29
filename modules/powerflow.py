@@ -3,14 +3,14 @@ import re
 import os
 from modules.generator import add_gd, get_GneratorPower,get_GenPower
 from modules.bess import add_bat, get_BessPower
-from modules.load import add_load,get_LoadPower
+from modules.load import add_load,add_light,get_LoadPower
 import time as t
 import numpy as np
 
 output_csv = os.getcwd() + '/data/output/csv/'
 
 
-def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
+def power_flow(timestep,opendssmodel,batteries,generators,loads,light_list,dss):
 
     #Clean the prompt comand of the OpenDSS
     dss.Basic.ClearAll()
@@ -29,6 +29,11 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,dss):
     for load in loads:
         load.update_power(timestep)
         dss.Command(add_load(load))
+
+    #Add the public ilumination to the OpenDSS model
+    for light in light_list:
+        light.update_power(timestep)
+        dss.Command(add_light(light))
     
     # Add the batteries to the OpenDSS model
     for battery in batteries:

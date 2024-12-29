@@ -11,6 +11,7 @@ def read_file_xlsx(path):
     bess = file['BESS']
     generators = file['Generator']
     loads = file['Load']
+    public_ilumination = file['Public_Ilumination']
 
-    dict_contet = {'General': general_informations, 'BESS': bess, 'Generators': generators, 'Loads': loads}
+    dict_contet = {'General': general_informations, 'BESS': bess, 'Generators': generators, 'Loads': loads, 'Public_Ilumination': public_ilumination}
     return dict_contet

@@ -6,7 +6,7 @@ from modules.read_spreadsheet import read_file_xlsx
 from modules.get_general_informations import get_informations
 from modules.bess import construct_bess,bess_operation,simple_bess,simple_bess_load
 from modules.generator import construct_generators
-from modules.load import construct_loads
+from modules.load import construct_loads,construct_lights
 from modules.powerflow import power_flow
 from modules.plots import plot, display_graph,save_fig,plot_bus_voltages
 from modules.utils import save_csv
@@ -81,12 +81,14 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     batteries = file_contents['BESS']
     generators = file_contents['Generators']
     loads = file_contents['Loads']
+    public_ilumination = file_contents['Public_Ilumination']
 
     # Get the general informations
     general_informations = get_informations(general_informations)
     bess_list = construct_bess(batteries)
     generators_list = construct_generators(generators)
     loads_list = construct_loads(loads)
+    lights_list = construct_lights(public_ilumination)
     
 
     #Run the power flow
@@ -169,7 +171,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                 #         bess_power_df = pd.concat([bess_power_df,new_line_bess],ignore_index=True)
                 
                 # Run the power flow with the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
 
                 # Concatenate the new lines in their dataframes
                 bus_power_df1 = pd.concat([bus_power_df1,bus_power],ignore_index=True) # Store the power at each bus
@@ -187,7 +189,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                     bess.update_bus(bus)
 
                 # Run the power flow with the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
 
                 # Concatenate the new lines in their dataframes
                 bus_power_df1 = pd.concat([bus_power_df1,bus_power],ignore_index=True) # Store the power at each bus
