@@ -53,9 +53,6 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,light_list,dss):
     losses = get_losses(timestep,dss)
     bus_power_df = get_bus_power(buses,timestep,dss)
     
-    
-    
-
     # Display power and current flows in branches
     branch_df = display_branch_flows(timestep,dss)
   
