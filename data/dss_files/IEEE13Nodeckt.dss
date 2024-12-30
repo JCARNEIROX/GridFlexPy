@@ -1,16 +1,11 @@
-Clear 
-! This script is based on a script developed by Tennessee Tech Univ students
-! Tyler Patton, Jon Wood, and David Woods, April 2009
-!
+Set DefaultBaseFrequency=60 
 
-new circuit.IEEE13Nodeckt 
-~ basekv=11.4 pu=1.035 phases=3 bus1=SourceBus  
-~ MVAsc3=48.887 MVASC1=9.557    ! stiffen the source to approximate inf source
-~ x1r1=2.082 x0r0=2.328
+!!! Equivalente do alimentador
+New circuit.IEEE13Nodeckt Bus1=SourceBus.1.2.3 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 
 
 New Transformer.Sub Phases=3 Windings=2 XHL=3.33592 %NoLoadLoss=0.279333
-~ wdg=1 bus=SourceBus   Conn=delta kV=11.4 kVA=150 Tap=1 %R=0.563667 
-~ wdg=2 bus=650         Conn=wye   kV=0.22 kVA=150 Tap=1 %R=0.563667  
+~ wdg=1 bus=SourceBus.1.2.3   Conn=delta kV=11.4 kVA=150 Tap=1 %R=0.563667 
+~ wdg=2 bus=650.1.2.3         Conn=wye   kV=0.22 kVA=150 Tap=1 %R=0.563667  
 
 
 !LINE CODES
@@ -50,48 +45,24 @@ New linecode.mtx607 nphases=1 BaseFreq=60
 ~ cmatrix = [236] 
 ~ units=mi 
 
-New LoadShape.ip-tipo1 Npts=288 
- ~ Mult=(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.75, 0.41667185360388403, 0.333328146396116, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.08332814639611603, 0.41667185360388403, 0.666671853603884, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.75, 0.41667185360388403, 0.333328146396116, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.08332814639611603, 0.41667185360388403, 0.666671853603884, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.75, 0.41667185360388403, 0.333328146396116, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.08332814639611603, 0.41667185360388403, 0.666671853603884, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0) 
- ~ Hour=(0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0, 5.25, 5.5, 5.75, 6.0, 6.25, 6.5, 6.75, 7.0, 7.25, 7.5, 7.75, 8.0, 8.25, 8.5, 8.75, 9.0, 9.25, 9.5, 9.75, 10.0, 10.25, 10.5, 10.75, 11.0, 11.25, 11.5, 11.75, 12.0, 12.25, 12.5, 12.75, 13.0, 13.25, 13.5, 13.75, 14.0, 14.25, 14.5, 14.75, 15.0, 15.25, 15.5, 15.75, 16.0, 16.25, 16.5, 16.75, 17.0, 17.25, 17.5, 17.75, 18.0, 18.25, 18.5, 18.75, 19.0, 19.25, 19.5, 19.75, 20.0, 20.25, 20.5, 20.75, 21.0, 21.25, 21.5, 21.75, 22.0, 22.25, 22.5, 22.75, 23.0, 23.25, 23.5, 23.75, 24.0, 24.25, 24.5, 24.75, 25.0, 25.25, 25.5, 25.75, 26.0, 26.25, 26.5, 26.75, 27.0, 27.25, 27.5, 27.75, 28.0, 28.25, 28.5, 28.75, 29.0, 29.25, 29.5, 29.75, 30.0, 30.25, 30.5, 30.75, 31.0, 31.25, 31.5, 31.75, 32.0, 32.25, 32.5, 32.75, 33.0, 33.25, 33.5, 33.75, 34.0, 34.25, 34.5, 34.75, 35.0, 35.25, 35.5, 35.75, 36.0, 36.25, 36.5, 36.75, 37.0, 37.25, 37.5, 37.75, 38.0, 38.25, 38.5, 38.75, 39.0, 39.25, 39.5, 39.75, 40.0, 40.25, 40.5, 40.75, 41.0, 41.25, 41.5, 41.75, 42.0, 42.25, 42.5, 42.75, 43.0, 43.25, 43.5, 43.75, 44.0, 44.25, 44.5, 44.75, 45.0, 45.25, 45.5, 45.75, 46.0, 46.25, 46.5, 46.75, 47.0, 47.25, 47.5, 47.75, 48.0, 48.25, 48.5, 48.75, 49.0, 49.25, 49.5, 49.75, 50.0, 50.25, 50.5, 50.75, 51.0, 51.25, 51.5, 51.75, 52.0, 52.25, 52.5, 52.75, 53.0, 53.25, 53.5, 53.75, 54.0, 54.25, 54.5, 54.75, 55.0, 55.25, 55.5, 55.75, 56.0, 56.25, 56.5, 56.75, 57.0, 57.25, 57.5, 57.75, 58.0, 58.25, 58.5, 58.75, 59.0, 59.25, 59.5, 59.75, 60.0, 60.25, 60.5, 60.75, 61.0, 61.25, 61.5, 61.75, 62.0, 62.25, 62.5, 62.75, 63.0, 63.25, 63.5, 63.75, 64.0, 64.25, 64.5, 64.75, 65.0, 65.25, 65.5, 65.75, 66.0, 66.25, 66.5, 66.75, 67.0, 67.25, 67.5, 67.75, 68.0, 68.25, 68.5, 68.75, 69.0, 69.25, 69.5, 69.75, 70.0, 70.25, 70.5, 70.75, 71.0, 71.25, 71.5, 71.75)
-
-!!! Iluminação pública
-New Load._ip_28308363 Bus1=bus_566670641_37062204.1.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308464 Bus1=bus_566670641_37113232.1.2 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308588 Bus1=bus_566670641_37028545.2.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308999 Bus1=bus_566670641_37032475.1.2 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28309092 Bus1=bus_566670641_37062502.2.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28309161 Bus1=bus_566670641_472512386.1.2 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308982 Bus1=bus_566670641_37113446.1.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308775 Bus1=bus_566670641_37028632.1.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308625 Bus1=bus_566670641_37062314.1.2 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308456 Bus1=bus_566670641_37028496.1.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28307968 Bus1=bus_566670641_37028294.1.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308055 Bus1=bus_566670641_37035979.1.2 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-New Load._ip_28308160 Bus1=bus_566670641_37028374.2.3 Phases=1 kV=0.22 kW=0.084 Model=8 Daily=ip-tipo1 Conn=delta kvar=0.0160187 Status=exempt Class=2 Vminpu=0.92 ZIPV=(-0.16, 1.2, -0.04, 3.26, -4.11, 1.85, 0.52) 
-
-
-
 !Bus 670 is the concentrated point load of the distributed load on line 632 to 671 located at 1/3 the distance from node 632
 
 !LINE DEFINITIONS 
-New Line.650632    Phases=3 Bus1=650.1.2.3   Bus2=632.1.2.3  LineCode=mtx601 Length=2000 units=ft 
+New Line.650632    Phases=3 Bus1=650.1.2.3    Bus2=632.1.2.3  LineCode=mtx601 Length=2000 units=ft 
 New Line.632670    Phases=3 Bus1=632.1.2.3    Bus2=670.1.2.3  LineCode=mtx601 Length=667  units=ft    
 New Line.670671    Phases=3 Bus1=670.1.2.3    Bus2=671.1.2.3  LineCode=mtx601 Length=1333 units=ft 
 New Line.671680    Phases=3 Bus1=671.1.2.3    Bus2=680.1.2.3  LineCode=mtx601 Length=1000 units=ft 
 New Line.632633    Phases=3 Bus1=632.1.2.3    Bus2=633.1.2.3  LineCode=mtx602 Length=500  units=ft 
-New Line.632645    Phases=2 Bus1=632.1.2.3     Bus2=645.1.2.3    LineCode=mtx603 Length=500  units=ft 
-New Line.645646    Phases=2 Bus1=645.1.2.3      Bus2=646.1.2.3    LineCode=mtx603 Length=300  units=ft 
+New Line.632645    Phases=2 Bus1=632.1.2.3    Bus2=645.1.2.3  LineCode=mtx603 Length=500  units=ft 
+New Line.645646    Phases=2 Bus1=645.1.2.3    Bus2=646.1.2.3  LineCode=mtx603 Length=300  units=ft 
 New Line.692675    Phases=3 Bus1=692.1.2.3    Bus2=675.1.2.3  LineCode=mtx606 Length=500  units=ft 
-New Line.671684    Phases=2 Bus1=671.1.2.3      Bus2=684.1.2.3    LineCode=mtx604 Length=300  units=ft 
-New Line.684611    Phases=1 Bus1=684.1.2.3        Bus2=611.1.2.3      LineCode=mtx605 Length=300  units=ft 
-New Line.684652    Phases=1 Bus1=684.1.2.3        Bus2=652.1.2.3      LineCode=mtx607 Length=800  units=ft 
+New Line.671684    Phases=2 Bus1=671.1.2.3    Bus2=684.1.2.3  LineCode=mtx604 Length=300  units=ft 
+New Line.684611    Phases=1 Bus1=684.1.2.3    Bus2=611.1.2.3  LineCode=mtx605 Length=300  units=ft 
+New Line.684652    Phases=1 Bus1=684.1.2.3    Bus2=652.1.2.3  LineCode=mtx607 Length=800  units=ft 
 
 MakeBusList
-Set Voltagebases=[115, 4.16, .48]
+Set Voltagebases=[11.4, 0.22, 0.127]
 CalcVoltageBases
-
-!!Solve
-BusCoords IEEE13Node_BusXY.csv
 
 Set maxiterations = 500
 set mode=snap

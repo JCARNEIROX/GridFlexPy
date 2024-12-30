@@ -43,23 +43,19 @@ def construct_bess(batteries):
 
 def get_BessPower(dss,timestep):
 
-    elements = dss.Circuit.AllElementNames()
-    batteries = [element for element in elements if element.startswith("Storage.")]
-
-
+    batteries = dss.Storages.AllNames()
     #Create a empty dataframe to store the bateries power
     columns_bess = ['Timestep','Bess_Id','P(kW)','Q(kVar)','E(kWh)','SOC']
     bess_power_df = pd.DataFrame(columns=columns_bess)
 
     for bat in batteries:
-            dss.Circuit.SetActiveElement(bat)
+            dss.Circuit.SetActiveElement(f'Storage.{bat}')
             powers = dss.CktElement.Powers()
-            name = bat.split('.')[1]
             Et = float(dss.Properties.Value('kWhstored'))
             SOC = float(dss.Properties.Value('%stored'))
             active_power = -sum(powers[::2])  #  Sum the active power
             reactive_power = -sum(powers[1::2])  # Sum the reacti power
-            bat_line = pd.DataFrame([[timestep, name, round(active_power,4),round(reactive_power,4),round(Et,2),round(SOC/100,2)]], columns=columns_bess)
+            bat_line = pd.DataFrame([[timestep, bat, round(active_power,4),round(reactive_power,4),round(Et,2),round(SOC/100,2)]], columns=columns_bess)
             bess_power_df = pd.concat([bess_power_df,bat_line],ignore_index=True)
 
     return bess_power_df

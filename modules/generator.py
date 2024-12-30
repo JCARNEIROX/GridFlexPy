@@ -46,15 +46,13 @@ def get_GenPower(dss,timestep):
     Get the power of the generators in the circuit.
     Returns a two double array with the power of the loads and bus power
     """
-    elements = dss.Circuit.AllElementNames()
-    generators = [element for element in elements if element.startswith("Generator.")]
+    generators = dss.Generators.AllNames()
 
     gen_power = [0,0]
     for gen in generators:
-            dss.Circuit.SetActiveElement(gen)
-            powers = dss.CktElement.Powers()
-            gen_power[0] -= sum(powers[::2])  # Sum the active power
-            gen_power[1] -= sum(powers[1::2])  # Sum reactive power
+            dss.Circuit.SetActiveElement(f'Generator.{gen}')
+            gen_power[0] += dss.Generators.kW()  # Sum the active power
+            gen_power[1] += dss.Generators.kvar()  # Sum reactive power
     
     columns_power = ['Timestep','P(kW)','Q(kvar)']
     gen_line = pd.DataFrame([[timestep, round(gen_power[0],4),round(gen_power[1],4)]], columns=columns_power)
@@ -79,7 +77,7 @@ class Generator:
         """
         Load the profile and update the power of the load in a specific timestep.
         """
-        data = pd.read_csv(f'{path}{self.Profile}.csv')
+        data = pd.read_csv(f'{path}{self.Profile}')
         data['datetime'] = pd.to_datetime(data['datetime'])
         Ppower = data[data['datetime'] == timestep]['Ppower'].values[0]
         self.kW = Ppower
