@@ -1,10 +1,10 @@
 Set DefaultBaseFreq=60
 
 !!! Equivalente do alimentador de MT (BGE09)
-New Circuit.BGE09 Bus1=SourceBus.1.2.3.4 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 ! Nível de curto-circuito ajustado conforme estudo de proteção/seletividade feito pela NEC (NE00-001-00-MC-004_R0 - CURTO-CIRCUITO.pdf)
+New Circuit.BGE09 Bus1=SourceBus.1.2.3.4 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 
 
 !!! Transformador de distribuição
-New Transformer._oh_566670641_566670640_ Windings=2 XHL=3.33592 %NoLoadLoss=0.279333 
+New Transformer.SubTransformer Windings=2 XHL=3.33592 %NoLoadLoss=0.279333 
  ~ Wdg=1 Bus=SourceBus.1.2.3 Conn=delta kV=11.4 kVA=150 Tap=1 %R=0.563667 
  ~ Wdg=2 Bus=650_sec.1.2.3.4 kV=0.22 kVA=150 Tap=1 %R=0.563667 
 
@@ -24,28 +24,33 @@ New LineGeometry.multiplex_120mm2_abcn Nconds=4
  ~ Cond=3 Wire=ca-120mm2-xlpe-1kv X=0.401879 H=898.631 Units=cm 
  ~ Cond=4 Wire=ca-70mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_25mm2_abcn Nconds=4 
  ~ Cond=1 Wire=ca-25mm2-xlpe-1kv X=0 H=900.774 Units=cm 
  ~ Cond=2 Wire=ca-25mm2-xlpe-1kv X=0.749679 H=900.191 Units=cm 
  ~ Cond=3 Wire=ca-25mm2-xlpe-1kv X=0.370411 H=899.321 Units=cm 
  ~ Cond=4 Wire=ca-25mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_16mm2_abcn Nconds=4 
  ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
  ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
  ~ Cond=3 Wire=ca-16mm2-xlpe-1kv X=0.245349 H=899.397 Units=cm 
  ~ Cond=4 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_16mm2_abn Nconds=3 Nphases=2 
  ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
  ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
  ~ Cond=3 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_16mm2_bcn Nconds=3 Nphases=2 
  ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
  ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.245349 H=899.397 Units=cm 
  ~ Cond=3 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.tradicional_2awg_abcn Nconds=4 
  ~ Cond=1 Wire=ca-2awg-1kv X=0 H=860 Units=cm 
  ~ Cond=2 Wire=ca-2awg-1kv X=0 H=840 Units=cm 
@@ -90,8 +95,8 @@ New Line._tap_19479078  Bus1=646_sec.1.2.3.4 Bus2=bus_646002.1.2.3.4 Length=0.01
 New Line._tap_171579699 Bus1=646_sec.1.2.3.4 Bus2=bus_646003.1.2.3.4 Length=0.0115084 Geometry=ramal_25mm2_abcn Units=km
 
 New Line._tap_171579799 Bus1=670_sec.1.2.3.4 Bus2=bus_670001.1.2.3.4 Length=0.00917257 Geometry=ramal_25mm2_abcn Units=km
-New Line._tap_171579708 Bus1=670_sec.1.2.3.4 Bus2=bus_670002.2.3.4 Length=0.00591219 Geometry=ramal_16mm2_bcn Units=km
-New Line._tap_171579819 Bus1=670_sec.1.2.3.4 Bus2=bus_670003.1.2.4 Length=0.00627548 Geometry=ramal_16mm2_abn Units=km
+New Line._tap_171579708 Bus1=670_sec.1.2.3.4 Bus2=bus_670002.1.2.3.4 Length=0.00591219 Geometry=ramal_25mm2_abcn Units=km
+New Line._tap_171579819 Bus1=670_sec.1.2.3.4 Bus2=bus_670003.1.2.3.4 Length=0.00627548 Geometry=ramal_25mm2_abcn Units=km
 
 New Line._tap_171579704 Bus1=671_sec.1.2.3.4 Bus2=bus_671001.1.2.3.4 Length=0.0193596 Geometry=ramal_25mm2_abcn Units=km
 New Line._tap_171579716 Bus1=671_sec.1.2.3.4 Bus2=bus_671002.1.2.3.4 Length=0.0134251 Geometry=ramal_25mm2_abcn Units=km
@@ -110,7 +115,7 @@ New Line._tap_171579712 Bus1=684_sec.1.2.3.4 Bus2=bus_684002.1.2.3.4 Length=0.01
 New Line._tap_171579718 Bus1=684_sec.1.2.3.4 Bus2=bus_684003.1.2.3.4 Length=0.0109413 Geometry=ramal_25mm2_abcn Units=km 
 
 New Line._tap_171579702 Bus1=611_sec.1.2.3.4 Bus2=bus_611001.1.2.3.4 Length=0.00889182 Geometry=ramal_25mm2_abcn Units=km 
-New Line._tap_19478922  Bus1=611_sec.2.3.4 Bus2=bus_611002.1.2.3.4 Length=0.005 Geometry=ramal_16mm2_bcn Units=km
+New Line._tap_19478922  Bus1=611_sec.2.3.4 Bus2=bus_611002.1.2.3.4 Length=0.005 Geometry=ramal_25mm2_abcn Units=km
 New Line._tap_171579714 Bus1=611_sec.1.2.3.4 Bus2=bus_611003.1.2.3.4 Length=0.0141231 Geometry=ramal_25mm2_abcn Units=km 
 
 New Line._tap_171579719 Bus1=652_sec.1.2.3.4 Bus2=bus_652001.1.2.3.4 Length=0.0109413 Geometry=ramal_25mm2_abcn Units=km 
@@ -181,4 +186,6 @@ MakeBusList
 Set VoltageBases=[0.127, 0.22, 6.5818, 11.4]
 CalcVoltageBases
 
-solve mode=snapshot
+Set maxiterations = 500
+set mode=snap
+!! Solve
