@@ -14,7 +14,7 @@ path_generators = os.getcwd() + '/data/generators_profiles/'
 path_forecast = os.getcwd() + '/data/forecasts'
 
 
-def power_flow(timestep,opendssmodel,batteries,generators,loads,light_list,dss):
+def power_flow_bess(timestep,opendssmodel,batteries,generators,loads,light_list,dss):
 
     #Clean the prompt comand of the OpenDSS
     dss.Basic.ClearAll()
@@ -62,6 +62,49 @@ def power_flow(timestep,opendssmodel,batteries,generators,loads,light_list,dss):
   
     return load,generation,bess,demand,losses,bus_power_df,bus_voltage,branch_df
 
+
+def power_flow(timestep,opendssmodel,generators,loads,light_list,dss):
+
+    #Clean the prompt comand of the OpenDSS
+    dss.Basic.ClearAll()
+    dss.Basic.Start(0)
+    dss.Command(f"Compile {opendssmodel}")
+    buses = dss.Circuit.AllBusNames()
+
+    #Add the generators to the OpenDSS model
+    for generator in generators:
+        # Update the power of the generator in the timestep
+        generator.update_power(timestep)
+        # Write the command
+        dss.Command(add_gd(generator))
+
+    #Add the loads to the OpenDSS model
+    for load in loads:
+        load.update_power(timestep)
+        dss.Command(add_load(load))
+
+    #Add the public ilumination to the OpenDSS model
+    for light in light_list:
+        light.update_power(timestep)
+        dss.Command(add_light(light))
+
+    #Solve the power flow
+    dss.Solution.Solve()  
+
+    # Get voltage values
+    bus_voltage = get_bus_voltages(timestep,buses,dss)
+        
+    # Get the power of the buses and the power delivered to the circuit
+    load = get_LoadPower(dss,timestep)
+    generation = get_GenPower(dss,timestep)
+    demand = get_demand(timestep,dss)
+    losses = get_losses(timestep,dss)
+    bus_power_df = get_bus_power(buses,timestep,dss)
+    
+    # Display power and current flows in branches
+    branch_df = display_branch_flows(timestep,dss)
+  
+    return load,generation,demand,losses,bus_power_df,bus_voltage,branch_df
 
 
 def get_bus_power(buses,timestep,dss):

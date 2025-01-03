@@ -7,7 +7,7 @@ from modules.get_general_informations import get_informations
 from modules.bess import construct_bess,smoothing_operation,simple_bess,operate_bess
 from modules.generator import construct_generators
 from modules.load import construct_loads,construct_lights
-from modules.powerflow import power_flow
+from modules.powerflow import power_flow,power_flow_bess
 from modules.plots import plot, display_graph,save_fig,plot_bus_voltages
 from modules.utils import save_csv
 import time as t
@@ -79,12 +79,8 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     voltage_df_list = []
     bess_power_list = []
 
-    # Start the counter to mensure the time of execution
-    start = t.time()
     # Time range to iterate
     time_range = pd.date_range(date_ini, date_end, freq=f"{interval}T").to_list()
-
-    print('Power Flow Simulation Started')
 
     # If the kind of operation is different from NoOperation, the BESS will be operated
     if not kind == 'NoOperation':
@@ -96,35 +92,20 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         # If bus is changed on a loop Update bus_node for BESS
         for bess in bess_list:
             bess.update_bus(bus)
-            
-        # Start power_flow
+
+        print('Power Flow Simulation Started')
+        # Start the counter to mensure the time of execution
+        start = t.time()
         for i,timestep in enumerate(time_range):
             print(f"Time: {timestep}")
-
             # Dont operate the BESS in the first three iterations
             if i>2:
                 
-                # Define the next power of BESS based on the operation
-                if kind == 'Smoothing':
-                    for bess in bess_list:
-                        next_bess_power,soc,energy,state = smoothing_operation(i,interval,demand_prev,sigma=45,bess_object=bess)
-                        bess.update_power(next_bess_power)
-                        bess.update_energy(energy)
-                        bess.update_soc(soc)
-                        bess.update_state(state)
-                        bess.update_bus(bus)
+                # Update bess power
+                operate_bess(kind,i,interval,demand_prev,bess_list)
 
-                elif kind == 'Simple':
-                    for bess in bess_list:
-                        next_bess_power,soc,energy,state = simple_bess(i,interval,demand_prev,bess) # Voltar depois para demand e na função de operação
-                        bess.update_power(next_bess_power)
-                        bess.update_energy(energy)
-                        bess.update_soc(soc)
-                        bess.update_state(state)
-                        bess.update_bus(bus)
-            
                 # Run the power flow with the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
 
                 # Append the new lines
                 bus_power_list.append(bus_power)
@@ -135,12 +116,11 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                 branch_df_list.append(branch_df)
                 voltage_df_list.append(bus_voltage)
                 bess_power_list.append(bess)
-
 
             else:
                 
                 # Run the power flow without the operation of the BESS
-                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
 
                 # Append the new lines
                 bus_power_list.append(bus_power)
@@ -151,6 +131,9 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                 branch_df_list.append(branch_df)
                 voltage_df_list.append(bus_voltage)
                 bess_power_list.append(bess)
+
+        # Print the time of execution of power flow
+        print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
 
         # Concatenate all dataframes
         bus_power_df1 = pd.concat(bus_power_list,ignore_index=True)
@@ -162,15 +145,18 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         voltage_df1 = pd.concat(voltage_df_list,ignore_index=True)
         bess_power_df = pd.concat(bess_power_list,ignore_index=True)
 
+        return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,bess_power_df,time_range
 
     # If the kind of operation is NoOperation, the BESS will not be operated
     else:
-        for i in range(len(time_range)):
-            timestep = time_range[i]
+        print('Power Flow Simulation Started')
+        # Start the counter to mensure the time of execution
+        start = t.time()
+        for i,timestep in enumerate(time_range):
             print(f"Time: {timestep}")
 
             # Run the power flow without the operation of the BESS
-            load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
+            load,generation,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow(timestep,file_dss,generators_list,loads_list,lights_list,dss)
 
             # Append the new lines
             bus_power_list.append(bus_power)
@@ -180,8 +166,10 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
             lossesdf_list.append(losses)
             branch_df_list.append(branch_df)
             voltage_df_list.append(bus_voltage)
-            bess_power_list.append(bess)
         
+        # Print the time of execution of power flow
+        print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
+
         # Concatenate all dataframes
         bus_power_df1 = pd.concat(bus_power_list,ignore_index=True)
         load_df1 = pd.concat(loaddf_list,ignore_index=True)
@@ -190,11 +178,12 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         losses_df1 = pd.concat(lossesdf_list,ignore_index=True)
         branch_df1 = pd.concat(branch_df_list,ignore_index=True)
         voltage_df1 = pd.concat(voltage_df_list,ignore_index=True)
-        bess_power_df = pd.concat(bess_power_list,ignore_index=True)
+        
+        return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,time_range
 
-    print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
+    
 
-    return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,bess_power_df,time_range
+    
     
 
 
