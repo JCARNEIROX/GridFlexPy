@@ -1,0 +1,163 @@
+Set DefaultBaseFreq=60
+
+!!! Equivalente do alimentador de MT (BGE09)
+New Circuit.BGE09 Bus1=Vsource.1.2.3.4 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 ! Nível de curto-circuito ajustado conforme estudo de proteção/seletividade feito pela NEC (NE00-001-00-MC-004_R0 - CURTO-CIRCUITO.pdf)
+
+!!! Transformador de distribuição
+New Transformer.SubTransformer Windings=2 XHL=3.33592 %NoLoadLoss=0.279333 
+ ~ Wdg=1 Bus=Vsource.1.2.3 Conn=delta kV=11.4 kVA=150 Tap=1 %R=0.563667 
+ ~ Wdg=2 Bus=bus_001.1.2.3.4 kV=0.22 kVA=150 Tap=1 %R=0.563667  
+
+!!! Dados dos cabos condutores
+New WireData.ca-120mm2-xlpe-1kv Rdc=0.253 Runits=km GMRac=0.52890 GMRunits=cm Radunits=cm NormAmps=229 Diam=1.29 
+New WireData.ca-25mm2-xlpe-1kv Rdc=1.2000 Runits=km GMRac=0.24272 GMRunits=cm Radunits=cm NormAmps=80 Diam=0.592 
+New WireData.ca-16mm2-xlpe-1kv Rdc=1.9100 Runits=km GMRac=0.19270 GMRunits=cm Radunits=cm NormAmps=59 Diam=0.470 
+New WireData.ca-70mm2-1kv Rdc=0.443 Runits=km GMRac=0.39975 GMRunits=cm Radunits=cm NormAmps=157 Diam=0.975 
+New WireData.ca-25mm2-1kv Rdc=1.200 Runits=km GMRac=0.24272 GMRunits=cm Radunits=cm NormAmps=80 Diam=0.592 
+New WireData.ca-16mm2-1kv Rdc=1.910 Runits=km GMRac=0.19270 GMRunits=cm Radunits=cm NormAmps=59 Diam=0.47 
+New WireData.ca-2awg-1kv Rdc=0.8595 Runits=km GMRac=0.30381 GMRunits=cm Radunits=cm NormAmps=95 Diam=0.741 
+
+!!! Dados de geometria das linhas
+New LineGeometry.multiplex_120mm2_abcn Nconds=4 
+ ~ Cond=1 Wire=ca-120mm2-xlpe-1kv X=0 H=901.427 Units=cm 
+ ~ Cond=2 Wire=ca-120mm2-xlpe-1kv X=1.41211 H=900.203 Units=cm 
+ ~ Cond=3 Wire=ca-120mm2-xlpe-1kv X=0.401879 H=898.631 Units=cm 
+ ~ Cond=4 Wire=ca-70mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
+New LineGeometry.ramal_25mm2_abcn Nconds=4 
+ ~ Cond=1 Wire=ca-25mm2-xlpe-1kv X=0 H=900.774 Units=cm 
+ ~ Cond=2 Wire=ca-25mm2-xlpe-1kv X=0.749679 H=900.191 Units=cm 
+ ~ Cond=3 Wire=ca-25mm2-xlpe-1kv X=0.370411 H=899.321 Units=cm 
+ ~ Cond=4 Wire=ca-25mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
+New LineGeometry.ramal_16mm2_abcn Nconds=4 
+ ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
+ ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
+ ~ Cond=3 Wire=ca-16mm2-xlpe-1kv X=0.245349 H=899.397 Units=cm 
+ ~ Cond=4 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
+New LineGeometry.ramal_16mm2_abn Nconds=3 Nphases=2 
+ ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
+ ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
+ ~ Cond=3 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
+
+New LineGeometry.ramal_16mm2_bcn Nconds=3 Nphases=2 
+ ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
+ ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.245349 H=899.397 Units=cm 
+ ~ Cond=3 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
+
+New LineGeometry.tradicional_2awg_abcn Nconds=4 
+ ~ Cond=1 Wire=ca-2awg-1kv X=0 H=860 Units=cm 
+ ~ Cond=2 Wire=ca-2awg-1kv X=0 H=840 Units=cm 
+ ~ Cond=3 Wire=ca-2awg-1kv X=0 H=820 Units=cm 
+ ~ Cond=4 Wire=ca-2awg-1kv X=0 H=880 Units=cm 
+ ~  Reduce=n 
+
+
+!!! Rede secundária
+New Line.sec_001002 Bus1=bus_001.1.2.3.4 Bus2=bus_002.1.2.3.4 Length=0.0381091 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_003004 Bus1=bus_003.1.2.3.4 Bus2=bus_004.1.2.3.4 Length=0.0319177 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_001003 Bus1=bus_001.1.2.3.4 Bus2=bus_003.1.2.3.4 Length=0.0347263 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_005006 Bus1=bus_005.1.2.3.4 Bus2=bus_006.1.2.3.4 Length=0.0345699 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_007008 Bus1=bus_007.1.2.3.4 Bus2=bus_008.1.2.3.4 Length=0.0241134 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_009010 Bus1=bus_009.1.2.3.4 Bus2=bus_010.1.2.3.4 Length=0.0241172 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_011012 Bus1=bus_011.1.2.3.4 Bus2=bus_012.1.2.3.4 Length=0.0406474 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_008011 Bus1=bus_008.1.2.3.4 Bus2=bus_011.1.2.3.4 Length=0.0229642 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_010007 Bus1=bus_010.1.2.3.4 Bus2=bus_007.1.2.3.4 Length=0.0332786 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_002009 Bus1=bus_002.1.2.3.4 Bus2=bus_009.1.2.3.4 Length=0.0263844 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.sec_006013 Bus1=bus_006.1.2.3.4 Bus2=bus_013.1.2.3.4 Length=0.0410325 Geometry=tradicional_2awg_abcn Units=km 
+New Line.sec_009005 Bus1=bus_009.1.2.3.4 Bus2=bus_005.1.2.3.4 Length=0.0298908 Geometry=tradicional_2awg_abcn Units=km 
+New Line.sec_012014 Bus1=bus_012.1.2.3.4 Bus2=bus_014.1.2.3.4 Length=0.0280015 Geometry=tradicional_2awg_abcn Units=km 
+
+!!! Ramais de ligação
+New Line.ramal_001 Bus1=bus_014.1.2.3.4 Bus2=busLoad_001.1.2.3.4 Length=0.0115084 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_002 Bus1=bus_012.1.2.3.4 Bus2=busLoad_002.1.2.3.4 Length=0.00917257 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_003 Bus1=bus_010.1.2.3.4 Bus2=busLoad_003.1.2.3.4 Length=0.00889182 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_004 Bus1=bus_011.1.2.3.4 Bus2=busLoad_004.1.2.3.4 Length=0.0193596 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_005 Bus1=bus_012.1.2.3.4 Bus2=busLoad_005.1.2.3.4 Length=0.00591219 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_006 Bus1=bus_007.1.2.3.4 Bus2=busLoad_006.1.2.3.4 Length=0.0110049 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_007 Bus1=bus_007.1.2.3.4 Bus2=busLoad_007.1.2.3.4 Length=0.0134701 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_008 Bus1=bus_010.1.2.3.4 Bus2=busLoad_008.1.2.3.4 Length=0.0141231 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_009 Bus1=bus_010.1.2.3.4 Bus2=busLoad_009.1.2.3.4 Length=0.0134251 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_010 Bus1=bus_009.1.2.3.4 Bus2=busLoad_010.1.2.3.4 Length=0.0109413 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_011 Bus1=bus_006.1.2.3.4 Bus2=busLoad_011.1.2.3.4 Length=0.00764268 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_012 Bus1=bus_006.1.2.3.4 Bus2=busLoad_012.1.2.3.4 Length=0.00667061 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_013 Bus1=bus_006.1.2.3.4 Bus2=busLoad_013.1.2.3.4 Length=0.0112426 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_014 Bus1=bus_013.1.2.3.4 Bus2=busLoad_014.1.2.3.4 Length=0.0106785 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_015 Bus1=bus_013.1.2.3.4 Bus2=busLoad_015.1.2.3.4 Length=0.010876 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_016 Bus1=bus_013.1.2.3.4 Bus2=busLoad_016.1.2.3.4 Length=0.0238047 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_017 Bus1=bus_009.1.2.3.4 Bus2=busLoad_017.1.2.3.4 Length=0.0125825 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_018 Bus1=bus_003.1.2.3.4 Bus2=busLoad_018.1.2.3.4 Length=0.00550045 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_019 Bus1=bus_003.1.2.3.4 Bus2=busLoad_019.1.2.3.4 Length=0.0089716 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_020 Bus1=bus_003.1.2.3.4 Bus2=busLoad_020.1.2.3.4 Length=0.0110789 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_021 Bus1=bus_001.1.2.3.4 Bus2=busLoad_021.1.2.3.4 Length=0.0144934 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_022 Bus1=bus_006.1.2.3.4 Bus2=busLoad_022.1.2.3.4 Length=0.0113034 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_023 Bus1=bus_014.1.2.3.4 Bus2=busLoad_023.1.2.3.4 Length=0.010247 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_024 Bus1=bus_012.1.2.3.4 Bus2=busLoad_024.1.2.3.4 Length=0.00627548 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_025 Bus1=bus_001.1.2.3.4 Bus2=busLoad_025.1.2.3.4 Length=0.0133098 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_026 Bus1=bus_010.1.2.3.4 Bus2=busLoad_026.1.2.3.4 Length=0.005 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_027 Bus1=bus_004.1.2.3.4 Bus2=busLoad_027.1.2.3.4 Length=0.00794142 Geometry=ramal_25mm2_abcn Units=km 
+New Line.ramal_028 Bus1=bus_004.1.2.3.4 Bus2=busLoad_028.1.2.3.4 Length=0.00815819 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_029 Bus1=bus_014.1.2.3.4 Bus2=busLoad_029.1.2.3.4 Length=0.01062 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_030 Bus1=bus_004.1.2.3.4 Bus2=busLoad_030.1.2.3.4 Length=0.0275409 Geometry=ramal_16mm2_abcn Units=km 
+New Line.ramal_031 Bus1=bus_010.1.2.3.4 Bus2=busLoad_031.1.2.3.4 Length=0.012408 Geometry=ramal_16mm2_abcn Units=km 
+
+
+!!!! Impedâncias de aterramento
+New Reactor.gnd_tr__oh_566670641 Phases=1 Bus1=bus_001.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035581263 Phases=1 Bus1=busLoad_021.4 R=15 X=0 
+New Reactor.gnd_uc__b1_4001138436 Phases=1 Bus1=busLoad_025.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035475900 Phases=1 Bus1=busLoad_014.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036118184 Phases=1 Bus1=busLoad_014.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035370840 Phases=1 Bus1=busLoad_015.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035371129 Phases=1 Bus1=busLoad_015.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035366079 Phases=1 Bus1=busLoad_016.4 R=15 X=0 
+New Reactor.gnd_uc__b3_0041687892 Phases=1 Bus1=busLoad_016.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035366036 Phases=1 Bus1=busLoad_011.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0037195921 Phases=1 Bus1=busLoad_011.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035370203 Phases=1 Bus1=busLoad_012.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0037667661 Phases=1 Bus1=busLoad_012.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035408618 Phases=1 Bus1=busLoad_013.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035523484 Phases=1 Bus1=busLoad_013.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035366346 Phases=1 Bus1=busLoad_022.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035473258 Phases=1 Bus1=busLoad_010.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036046086 Phases=1 Bus1=busLoad_010.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035374276 Phases=1 Bus1=busLoad_017.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036347272 Phases=1 Bus1=busLoad_003.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041184335 Phases=1 Bus1=busLoad_003.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035368799 Phases=1 Bus1=busLoad_008.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035436662 Phases=1 Bus1=busLoad_008.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036379310 Phases=1 Bus1=busLoad_009.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041428846 Phases=1 Bus1=busLoad_009.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035376414 Phases=1 Bus1=busLoad_006.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036470899 Phases=1 Bus1=busLoad_006.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0040626849 Phases=1 Bus1=busLoad_007.4 R=15 X=0 
+New Reactor.gnd_uc__b1_4000150453 Phases=1 Bus1=busLoad_007.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0039059839 Phases=1 Bus1=busLoad_004.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0039066592 Phases=1 Bus1=busLoad_004.4 R=15 X=0 
+New Reactor.gnd_uc__b1_4000346865 Phases=1 Bus1=busLoad_029.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041034830 Phases=1 Bus1=busLoad_001.4 R=15 X=0 
+New Reactor.gnd_uc__b3_0042149282 Phases=1 Bus1=busLoad_001.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041815386 Phases=1 Bus1=busLoad_023.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041325796 Phases=1 Bus1=busLoad_002.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0042022983 Phases=1 Bus1=busLoad_002.4 R=15 X=0 
+New Reactor.gnd_uc__b1_4000416233 Phases=1 Bus1=busLoad_005.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0041828690 Phases=1 Bus1=busLoad_024.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0037526677 Phases=1 Bus1=busLoad_031.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035374144 Phases=1 Bus1=busLoad_018.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035401931 Phases=1 Bus1=busLoad_019.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035965215 Phases=1 Bus1=busLoad_019.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035575433 Phases=1 Bus1=busLoad_020.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035374551 Phases=1 Bus1=busLoad_027.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0035491329 Phases=1 Bus1=busLoad_027.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036873772 Phases=1 Bus1=busLoad_028.4 R=15 X=0 
+New Reactor.gnd_uc__b1_0036703907 Phases=1 Bus1=busLoad_030.4 R=15 X=0 
+
+
+MakeBusList
+Set VoltageBases=[0.127, 0.22, 6.5818, 11.4]
+CalcVoltageBases
+
+solve mode=snapshot

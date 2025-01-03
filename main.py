@@ -1,23 +1,23 @@
-from modules.run import run,return_general_informations
+from modules.run import run
 from modules.utils import save_csv
 from modules.plots import plot,display_graph,save_fig,plot_graph
 import os
 
 
 # Input and output paths    
-path_xlsx = os.getcwd() + '/data/spreadsheets/'
-path_dss = os.getcwd() + '/data/dss_files/'	
-output_csv = os.getcwd() + '/data/output/csv/'
-output_img = os.getcwd() + '/data/output/img/'
-path_generators = os.getcwd() + '/data/generators_profiles/'
+path_xlsx = os.getcwd() + '/data/spreadsheets/'; os.makedirs(path_xlsx,exist_ok=True)
+path_dss = os.getcwd() + '/data/dss_files/' ; os.makedirs(path_dss,exist_ok=True)
+output_csv = os.getcwd() + '/data/output/csv/'; os.makedirs(output_csv,exist_ok=True)
+output_img = os.getcwd() + '/data/output/img/'; os.makedirs(output_img,exist_ok=True)
+path_generators = os.getcwd() + '/data/generators_profiles/'; os.makedirs(path_generators,exist_ok=True)
 
 if __name__ == '__main__':
 
     # General informations
-    name_spreadsheet = 'sheet_5Node.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
-    name_dss = '5Nodeckt.dss' # Name of your main dss_file in directory data/dss_files
+    name_spreadsheet = 'sheet_IEEE13Node.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
+    name_dss = 'CondominioDosIpes.dss' # Name of your main dss_file in directory data/dss_files
     kind = 'NoOperation' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing'
-    bess_bus = 1
+    bess_bus = '1'
    
     print(f'Running power flow for BESS in bus {bess_bus} with kind of operation {kind}')
 

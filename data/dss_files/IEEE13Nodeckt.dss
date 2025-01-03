@@ -67,6 +67,7 @@ New Line._sec_632670 Bus1=632_sec.1.2.3.4 Bus2=670_sec.1.2.3.4 Length=0.0280015 
 New Line._sec_670671 Bus1=670_sec.1.2.3.4 Bus2=671_sec.1.2.3.4 Length=0.0406474 Geometry=multiplex_120mm2_abcn Units=km
 New Line._sec_671984 Bus1=671_sec.1.2.3.4 Bus2=684_sec.1.2.3.4 Length=0.0229642 Geometry=multiplex_120mm2_abcn Units=km
 New Line._sec_684652 Bus1=684_sec.1.2.3.4 Bus2=652_sec.1.2.3.4 Length=0.0180142 Geometry=multiplex_120mm2_abcn Units=km
+New Line._sec_684611 Bus1=684_sec.1.2.3.4 Bus2=611_sec.1.2.3.4 Length=0.0200142 Geometry=multiplex_120mm2_abcn Units=km
 New Line._sec_671692 Bus1=671_sec.1.2.3.4 Bus2=692_sec.1.2.3.4 Length=0.0209642 Geometry=multiplex_120mm2_abcn Units=km 
 New Line._sec_692975 Bus1=692_sec.1.2.3.4 Bus2=675_sec.1.2.3.4 Length=0.0319177 Geometry=multiplex_120mm2_abcn Units=km 
 New Line._sec_671680 Bus1=671_sec.1.2.3.4 Bus2=680_sec.1.2.3.4 Length=0.0241134 Geometry=multiplex_120mm2_abcn Units=km 

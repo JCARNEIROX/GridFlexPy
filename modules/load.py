@@ -1,7 +1,14 @@
 import pandas as pd
 import os
 
-path = os.getcwd() + '/data/loads/'
+# Input and output paths    
+path_xlsx = os.getcwd() + '/data/spreadsheets/'
+path_dss = os.getcwd() + '/data/dss_files/'	
+output_csv = os.getcwd() + '/data/output/csv/'
+output_img = os.getcwd() + '/data/output/img/'
+path_generators = os.getcwd() + '/data/generators_profiles/'
+path_forecast = os.getcwd() + '/data/forecasts'
+path_loads = os.getcwd() + '/data/loads/'
 
 def add_load(Load):
   
@@ -21,7 +28,7 @@ def add_load(Load):
   ZIPV = Load.ZIPV
   conductors = ".".join(map(str, Terminals))
 
-  new_load = f"New Load.Load_{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW={kW*Pmax} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
+  new_load = f"New Load.Load_{name}_{bus} bus1={bus}.{conductors} Phases={phases} Conn={Conn} kV={kV} kW={kW*Pmax} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
 #   new_load = f"New Load.Load_{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW=5 Pf=1 Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
 
   return new_load
@@ -30,7 +37,7 @@ def add_light(Load):
     
     #Extract all atributes from object Load
     name = Load.id
-    bus = str(Load.bus_node).zfill(3)
+    bus = str(Load.bus_node)
     Terminals = str(Load.Terminals)
     phases = Load.phases
     Conn = Load.Conn
@@ -44,7 +51,7 @@ def add_light(Load):
     ZIPV = Load.ZIPV
     conductors = ".".join(map(str, Terminals))
     
-    new_load = f"New Load.{name}_bus_{bus} bus1=bus_{bus}.{conductors} Phases={phases} Con={Conn} kV={kV} kW={kW*Pmax} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
+    new_load = f"New Load.{name}_{bus} bus1={bus}.{conductors} Phases={phases} Conn={Conn} kV={kV} kW={kW*Pmax} Pf={Pf} Model={model} Class={classe} Vminpu={Vminpu} ZIPV={ZIPV}"
     return new_load
 
 def construct_loads(loads):
@@ -95,7 +102,7 @@ class Load:
     def __init__(self, id,Profile,buss_node,phases,Conn,kV,Pf,Model,Class,Vminpu,Terminals, Pmax=1,ZIPV=(0.5, 0, 0.5, 1, 0, 0, 0.5) ,kW=0):
 
         self.id = id
-        self.Profile = Profile
+        self.Profile = pd.read_csv(f'{path_loads}{Profile}')
         self.bus_node = buss_node
         self.phases = phases
         self.Conn = Conn
@@ -113,9 +120,8 @@ class Load:
         """
         Load the profile and update the power of the load in a specific timestep.
         """
-        data = pd.read_csv(f'{path}{self.Profile}')
-        data['datetime'] = pd.to_datetime(data['datetime'])
-        Ppower = data[data['datetime'] == timestep]['Ppower'].values[0]
+        self.Profile['datetime'] = pd.to_datetime(self.Profile['datetime'])
+        Ppower = self.Profile[self.Profile['datetime'] == timestep]['Ppower'].values[0]
         self.kW = Ppower
     
     def change_ZIPV(self, ZIPV):

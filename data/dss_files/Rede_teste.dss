@@ -1,28 +1,34 @@
-Set DefaultBaseFreq=60
+Set DefaultBaseFrequency=60 
 
-!!! Equivalente do alimentador de MT (BGE09)
-New Circuit.BGE09 Bus1=bus_650_sec.1.2.3 basekV=0.22
+!! Equivalente de Thèvenin 
+New Circuit.ModelagemTeste bus1=bus_650.1.2.3.4 basekV=0.22 
 
+!! Dados dos cabos e multiplex_120mm2_abcn das linhas
+New WireData.ca-120mm2-xlpe-1kv Rdc=0.253 Runits=km GMRac=0.52890 GMRunits=cm Radunits=cm NormAmps=229 Diam=1.29 
+New WireData.ca-70mm2-1kv Rdc=0.443 Runits=km GMRac=0.39975 GMRunits=cm Radunits=cm NormAmps=157 Diam=0.975 
 
-!!! Dados de geometria das linhas
-New WireData.Fios Rdc=0.52 Rac=0.63 Runits=km Radius=3.338 Radunits=mm 
-New LineSpacing.N1 Nconds=3 Nphases=3 Units=cm X=[-120.0  0.0  60.0] H=[ 1000.0  1000.0  1000.0] 
-New LineGeometry.Geometria  Nconds=3  Spacing=N1 Wires=[Fios, Fios, Fios] Reduce=no 
+!!! Dados de multiplex_120mm2_abcn das linhas
+New LineGeometry.multiplex_120mm2_abcn Nconds=4 
+ ~ Cond=1 Wire=ca-120mm2-xlpe-1kv X=0 H=901.427 Units=cm 
+ ~ Cond=2 Wire=ca-120mm2-xlpe-1kv X=1.41211 H=900.203 Units=cm 
+ ~ Cond=3 Wire=ca-120mm2-xlpe-1kv X=0.401879 H=898.631 Units=cm 
+ ~ Cond=4 Wire=ca-70mm2-1kv X=0 H=900 Units=cm 
+ ~  Reduce=n 
 
+!! Linhas
+New Line.Line_650632 Bus1=bus_650.1.2.3.4 Bus2=bus_632.1.2.3.4 Length=0.0381091 Geometry=multiplex_120mm2_abcn Units=km
+New Line.Line_632633 Bus1=bus_632.1.2.3.4 Bus2=bus_633.1.2.3.4 Length=0.0410325 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_632645 Bus1=bus_632.1.2.3.4 Bus2=bus_645.1.2.3.4 Length=0.0345699 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_645646 Bus1=bus_645.1.2.3.4 Bus2=bus_646.1.2.3.4 Length=0.0298908 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_632670 Bus1=bus_632.1.2.3.4 Bus2=bus_670.1.2.3.4 Length=0.0280015 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_670671 Bus1=bus_670.1.2.3.4 Bus2=bus_671.1.2.3.4 Length=0.0406474 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_671680 Bus1=bus_671.1.2.3.4 Bus2=bus_680.1.2.3.4 Length=0.0241134 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_671692 Bus1=bus_671.1.2.3.4 Bus2=bus_692.1.2.3.4 Length=0.0209642 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_692675 Bus1=bus_692.1.2.3.4 Bus2=bus_675.1.2.3.4 Length=0.0319177 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_671684 Bus1=bus_671.1.2.3.4 Bus2=bus_684.1.2.3.4 Length=0.0229642 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_684652 Bus1=bus_684.1.2.3.4 Bus2=bus_652.1.2.3.4 Length=0.0180142 Geometry=multiplex_120mm2_abcn Units=km 
+New Line.Line_684611 Bus1=bus_684.1.2.3.4 Bus2=bus_611.1.2.3.4 Length=0.0200142 Geometry=multiplex_120mm2_abcn Units=km 
 
-!!! Rede secundária
-New Line._sec_650632 Bus1=bus_650_sec.1.2.3 Bus2=bus_632_sec.1.2.3 Length=0.0381091 Geometry=Geometria Units=km 
-New Line._sec_632645 Bus1=bus_632_sec.1.2.3 Bus2=bus_645_sec.1.2.3 Length=0.0345699 Geometry=Geometria Units=km
-New Line._sec_645646 Bus1=bus_645_sec.1.2.3 Bus2=bus_646_sec.1.2.3 Length=0.0298908 Geometry=Geometria Units=km
-New Line._sec_632633 Bus1=bus_632_sec.1.2.3 Bus2=bus_633_sec.1.2.3 Length=0.0410325 Geometry=Geometria Units=km
-New Line._sec_632670 Bus1=bus_632_sec.1.2.3 Bus2=bus_670_sec.1.2.3 Length=0.0280015 Geometry=Geometria Units=km
-New Line._sec_670671 Bus1=bus_670_sec.1.2.3 Bus2=bus_671_sec.1.2.3 Length=0.0406474 Geometry=Geometria Units=km
-New Line._sec_671984 Bus1=bus_671_sec.1.2.3 Bus2=bus_684_sec.1.2.3 Length=0.0229642 Geometry=Geometria Units=km
-New Line._sec_684652 Bus1=bus_684_sec.1.2.3 Bus2=bus_652_sec.1.2.3 Length=0.0180142 Geometry=Geometria Units=km
-New Line._sec_684611 Bus1=bus_684_sec.1.2.3 Bus2=bus_611_sec.1.2.3 Length=0.0230142 Geometry=Geometria Units=km
-New Line._sec_671692 Bus1=bus_671_sec.1.2.3 Bus2=bus_692_sec.1.2.3 Length=0.0209642 Geometry=Geometria Units=km 
-New Line._sec_692975 Bus1=bus_692_sec.1.2.3 Bus2=bus_675_sec.1.2.3 Length=0.0319177 Geometry=Geometria Units=km 
-New Line._sec_671680 Bus1=bus_671_sec.1.2.3 Bus2=bus_680_sec.1.2.3 Length=0.0241134 Geometry=Geometria Units=km 
 
 !! Outras informações
 MakeBusList

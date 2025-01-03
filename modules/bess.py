@@ -1,7 +1,15 @@
-
 from scipy.ndimage import gaussian_filter,gaussian_filter1d
 import numpy as np
 import pandas as pd
+import os
+
+# Input and output paths    
+path_xlsx = os.getcwd() + '/data/spreadsheets/'
+path_dss = os.getcwd() + '/data/dss_files/'	
+output_csv = os.getcwd() + '/data/output/csv/'
+output_img = os.getcwd() + '/data/output/img/'
+path_generators = os.getcwd() + '/data/generators_profiles/'
+path_forecast = os.getcwd() + '/data/forecasts'
 
 def add_bat(Bess):
     """	
@@ -9,8 +17,10 @@ def add_bat(Bess):
     """
     name = Bess.id
     state = Bess.state
-    bus = str(Bess.bus_node).zfill(3)
+    bus = str(Bess.bus_node)
     Phases = Bess.Phases
+    Conn = Bess.Conn
+    Terminals = str(Bess.Terminals)
     kV = Bess.kV
     kW = Bess.Pt # Instanteneous power of the battery, kw>0: dischargin, kw<0: charging
     Cmax = Bess.Cmax
@@ -18,10 +28,9 @@ def add_bat(Bess):
     Et = Bess.Et  # Instanteneous energy stored in the battery
     Eff = Bess.Efficiency*100
     soc_min = Bess.soc_min
+    conductors = ".".join(map(str, Terminals))
 
-    new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} DispMode=DEFAULT State={state} Phases={Phases} kV={kV} kW={kW} kWhRated={Cmax} kWhstored={Et} %EffCharge={Eff} %IdlingkW=0 %EffDischarge={Eff} %reserve={soc_min} %X=0"
-    # new_bat = f"New Storage.Bess_{name}_bus_{bus} bus1=bus_{bus} DispMode=DEFAULT State={state} Phases={Phases} kV={kV} kW={kW} kWrated={Pmax} kWhRated={Emax} kWhstored={Et} %stored={SOC} %EffCharge={Eff} %IdlingkW=0 %EffDischarge={Eff} %reserve={soc_min} %X=0"
-    # new_bat = f"New Load.Bess_{name}_bus_{bus} bus1=bus_{bus} Phases={Phases} Conn=wye kV={kV} kW={kW} kVAr=0 Model=1 Vminpu=0.92"
+    new_bat = f"New Storage.Bess_{name}_{bus} bus1={bus}.{conductors} DispMode=DEFAULT State={state} Phases={Phases} Conn={Conn} kV={kV} kW={kW} kWhRated={Cmax} kWhstored={Et} %EffCharge={Eff} %IdlingkW=0 %EffDischarge={Eff} %reserve={soc_min} %X=0"
     
     return new_bat
 
@@ -32,10 +41,11 @@ def construct_bess(batteries):
     list_bess_objects = []
 
     for id in ids:
-        bess = Bess(id, batteries.loc[batteries['Id'] == id, 'Bus_node'].values[0], batteries.loc[batteries['Id'] == id, 'Phases'].values[0], 
-                    batteries.loc[batteries['Id'] == id, 'kV'].values[0], batteries.loc[batteries['Id'] == id, 'Pmax'].values[0], 
-                    batteries.loc[batteries['Id'] == id, 'Einit(%)'].values[0], batteries.loc[batteries['Id'] == id, 'Cmax'].values[0],
-                    batteries.loc[batteries['Id'] == id, 'SOC_min(%)'].values[0],batteries.loc[batteries['Id'] == id, 'SOC_max(%)'].values[0],
+        bess = Bess(id, batteries.loc[batteries['Id'] == id, 'Bus_node'].values[0], batteries.loc[batteries['Id'] == id, 'Phases'].values[0],
+                    batteries.loc[batteries['Id'] == id, 'Conn'].values[0], batteries.loc[batteries['Id'] == id, 'kV'].values[0], 
+                    batteries.loc[batteries['Id'] == id, 'Pmax'].values[0], batteries.loc[batteries['Id'] == id, 'Terminals'].values[0],
+                    batteries.loc[batteries['Id'] == id, 'Einit(%)'].values[0], batteries.loc[batteries['Id'] == id, 'Cmax'].values[0], 
+                    batteries.loc[batteries['Id'] == id, 'SOC_min(%)'].values[0], batteries.loc[batteries['Id'] == id, 'SOC_max(%)'].values[0], 
                     batteries.loc[batteries['Id'] == id, 'Efficiency'].values[0])
         list_bess_objects.append(bess)
 
@@ -61,12 +71,14 @@ def get_BessPower(dss,timestep):
     return bess_power_df
 
 class Bess:
-    def __init__(self, id, buss_node, Phases, kV, Pmax, Einit, Cmax, soc_min,soc_max, Efficiency,state='IDLING'):
+    def __init__(self, id, buss_node, Phases,Conn, kV, Pmax,Terminals, Einit, Cmax, soc_min,soc_max, Efficiency,state='IDLING'):
         self.id = id
         self.bus_node = buss_node
         self.Phases = Phases
+        self.Conn = Conn
         self.kV = kV
         self.Pmax = Pmax
+        self.Terminals = Terminals
         self.Pt = 0
         self.soc_min = soc_min
         self.soc_max = soc_max
@@ -107,7 +119,26 @@ class Bess:
     def update_bus(self,bus):
         self.bus_node = bus
         
+# Function to update Bess properties based of kind of operation
+def operate_bess(kind, i, interval, demand_prev,bess_list):
+    if kind == "Smoothing":
+        for bess in bess_list:
+            next_bess_power, soc, energy, state = smoothing_operation(i,interval,demand_prev,sigma=45,bess_object=bess)
+            bess.update_power(next_bess_power)
+            bess.update_energy(energy)
+            bess.update_soc(soc)
+            bess.update_state(state)
+    elif kind == "Simple":
+        for bess in bess_list:
+            next_bess_power, soc, energy, state = simple_bess(i, interval, demand_prev, bess)
+            bess.update_power(next_bess_power)
+            bess.update_energy(energy)
+            bess.update_soc(soc)
+            bess.update_state(state)
 
+##------------------------------------------------------------Functions to Operate Bess-----------------------------------------###
+
+# Função Luiza com os valores separados
 def bess_operation_load(i,timestep,demand,load,gen_power,gen_forec,alpha,bheta,sigma,bess_object):
 
     #Values for pv generation
@@ -204,11 +235,9 @@ def bess_operation_load(i,timestep,demand,load,gen_power,gen_forec,alpha,bheta,s
 
           else: #Descarrega com a potência máxima
             #   print('Aqui12')
-              return [Pseg, Soc + ( Pseg*(timestep/60)*(1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg]   
-          
+              return [Pseg, Soc + ( Pseg*(timestep/60)*(1 / bess_object.Efficiency) / bess_object.Cmax), Bess_E_seg] 
 
-          
-def bess_operation(i, timestep, demand, load, gen_power, gen_forec, alpha, bheta, sigma, bess_object):
+def smoothing_operation(i, timestep, demand, sigma, bess_object):
     # Values for PV generation
     # pv_med = np.mean(gen_power[i - 3:i])
     # next_pv = (alpha * gen_forec) + (bheta * pv_med)  # Weighting for the forecasting of PV generation

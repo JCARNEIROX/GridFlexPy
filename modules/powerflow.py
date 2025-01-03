@@ -1,13 +1,17 @@
 import pandas as pd
-import re
 import os
 from modules.generator import add_gd, get_GneratorPower,get_GenPower
 from modules.bess import add_bat, get_BessPower
 from modules.load import add_load,add_light,get_LoadPower
-import time as t
 import numpy as np
 
+# Input and output paths    
+path_xlsx = os.getcwd() + '/data/spreadsheets/'
+path_dss = os.getcwd() + '/data/dss_files/'	
 output_csv = os.getcwd() + '/data/output/csv/'
+output_img = os.getcwd() + '/data/output/img/'
+path_generators = os.getcwd() + '/data/generators_profiles/'
+path_forecast = os.getcwd() + '/data/forecasts'
 
 
 def power_flow(timestep,opendssmodel,batteries,generators,loads,light_list,dss):

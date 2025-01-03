@@ -1,23 +1,32 @@
 import pandas as pd
 import os
 
-path = os.getcwd() + '/data/generators_profiles/'
+# Input and output paths    
+path_xlsx = os.getcwd() + '/data/spreadsheets/'
+path_dss = os.getcwd() + '/data/dss_files/'	
+output_csv = os.getcwd() + '/data/output/csv/'
+output_img = os.getcwd() + '/data/output/img/'
+path_generators = os.getcwd() + '/data/generators_profiles/'
+path_forecast = os.getcwd() + '/data/forecasts'
+
 
 def add_gd(Generator):
     """	
     Function to write a comand that will modify the power of the generator during the power flow simulation.
     """
     name = Generator.id
-    bus = str(Generator.bus_node).zfill(3)
+    bus = str(Generator.bus_node)
     phases = Generator.phases
+    Terminals = str(Generator.Terminals)
     kV = Generator.kV
     Conn = Generator.Conn
     kW = Generator.kW
     Pmax = Generator.Pmax
     Pf = Generator.Pf
     model = Generator.Model
+    conductors = ".".join(map(str, Terminals))
 
-    new_gd = f"New Generator.Gen_{name}_bus_{bus} bus1=bus_{bus} Phases={phases} kV={kV} Conn={Conn} kW={kW*Pmax} Pf={Pf} Model={model}"
+    new_gd = f"New Generator.Gen_{name}_{bus} bus1={bus}.{conductors} Phases={phases} kV={kV} Conn={Conn} kW={kW*Pmax} Pf={Pf} Model={model}"
 
     return new_gd
 
@@ -70,15 +79,14 @@ class Generator:
         self.kW = kW
         self.Pf = Pf
         self.Model = Model
-        self.Profile = Profile
+        self.Profile = pd.read_csv(f'{path_generators}{Profile}')
         self.Terminals = Terminals
 
     def update_power(self, timestep):
         """
         Load the profile and update the power of the load in a specific timestep.
-        """
-        data = pd.read_csv(f'{path}{self.Profile}')
-        data['datetime'] = pd.to_datetime(data['datetime'])
-        Ppower = data[data['datetime'] == timestep]['Ppower'].values[0]
+        """    
+        self.Profile['datetime'] = pd.to_datetime(self.Profile['datetime'])
+        Ppower = self.Profile[self.Profile['datetime'] == timestep]['Ppower'].values[0]
         self.kW = Ppower
     
