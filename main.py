@@ -21,8 +21,6 @@ if __name__ == '__main__':
     
     print(f'Running power flow for BESS in bus {bess_bus} with kind of operation {kind}')
 
-    
-
     # Save the results in a csv file
     if not kind == 'NoOperation':
         # Run the power flow
