@@ -86,7 +86,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     if not kind == 'NoOperation':
 
         # Read the file of forecasted demand
-        file_demand = pd.read_csv(f"{path_forecast}demand/" + 'demand_NoOperation_year.csv')
+        file_demand = pd.read_csv(f"{path_forecast}demand/" + f'demand_NoOperation_year{name_dss.split('.')[0]}.csv')
         demand_prev = file_demand["P(kW)"].values
 
         # If bus is changed on a loop Update bus_node for BESS
