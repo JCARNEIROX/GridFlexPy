@@ -24,18 +24,21 @@ New LineGeometry.multiplex_120mm2_abcn Nconds=4
  ~ Cond=3 Wire=ca-120mm2-xlpe-1kv X=0.401879 H=898.631 Units=cm 
  ~ Cond=4 Wire=ca-70mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_25mm2_abcn Nconds=4 
  ~ Cond=1 Wire=ca-25mm2-xlpe-1kv X=0 H=900.774 Units=cm 
  ~ Cond=2 Wire=ca-25mm2-xlpe-1kv X=0.749679 H=900.191 Units=cm 
  ~ Cond=3 Wire=ca-25mm2-xlpe-1kv X=0.370411 H=899.321 Units=cm 
  ~ Cond=4 Wire=ca-25mm2-1kv X=0 H=900 Units=cm 
  ~  Reduce=n 
+
 New LineGeometry.ramal_16mm2_abcn Nconds=4 
  ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
  ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
  ~ Cond=3 Wire=ca-16mm2-xlpe-1kv X=0.245349 H=899.397 Units=cm 
  ~ Cond=4 Wire=ca-16mm2-1kv X=0 H=900 Units=cm 
- ~  Reduce=n 
+ ~  Reduce=n
+  
 New LineGeometry.ramal_16mm2_abn Nconds=3 Nphases=2 
  ~ Cond=1 Wire=ca-16mm2-xlpe-1kv X=0 H=900.651 Units=cm 
  ~ Cond=2 Wire=ca-16mm2-xlpe-1kv X=0.639346 H=900.125 Units=cm 
