@@ -30,12 +30,6 @@ def add_gd(Generator):
 
     return new_gd
 
-def get_GneratorPower(timestep, profile):
-    """
-    Function to get the power of the generator in a specific timestep.
-    """
-    return profile.loc[timestep, 'Ppower']
-
 def construct_generators(generators):
     """
     Construct the generator objects from the spreadsheet content.

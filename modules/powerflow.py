@@ -1,8 +1,8 @@
 import pandas as pd
 import os
-from modules.generator import add_gd, get_GneratorPower,get_GenPower
-from modules.bess import add_bat, get_BessPower
-from modules.load import add_load,add_light,get_LoadPower
+from modules import add_gd,get_GenPower
+from modules import add_bat, get_BessPower
+from modules import add_load,add_light,get_LoadPower
 import numpy as np
 
 # Input and output paths    

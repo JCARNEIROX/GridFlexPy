@@ -1,7 +1,7 @@
 Set DefaultBaseFreq=60
 
 !!! Equivalente do alimentador de MT (BGE09)
-New Circuit.BGE09 Bus1=Vsource.1.2.3.4 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 ! Nível de curto-circuito ajustado conforme estudo de proteção/seletividade feito pela NEC (NE00-001-00-MC-004_R0 - CURTO-CIRCUITO.pdf)
+New Circuit.BGE09 Bus1=Vsource.1.2.3.4 basekV=11.4 pu=1.035 Mvasc3=48.887 Mvasc1=9.557 x1r1=2.082 x0r0=2.328 
 
 !!! Transformador de distribuição
 New Transformer.SubTransformer Windings=2 XHL=3.33592 %NoLoadLoss=0.279333 
