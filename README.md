@@ -13,7 +13,7 @@ This work was developed during the program of  <b>Bolsa Estágio de Pesquisa no 
     <li>Introduction</li>
     <li>Features and Directories</li>
     <li>How to Use</li>
-    <li>Contribution</li>
+    <li>Installation and Contribution</li>
     <li>License</li>
     <li>Contacts</li>
 </ol>
@@ -51,7 +51,28 @@ The first step for the user to utilize the framework is to adapt the data to be 
 As this is an open-source framework, the battery operation functions can be modified in the <a href = "modules\bess.py">bess.py</a> module, and additional functions can be created to operate the battery according to the user's specific metrics.
 </p>
 
-<h3 style="font-size: 20px"><b>4.Contribution</b></h3>
+<h3 style="font-size: 20px"><b>4.Installation and Contribution</b></h3>
+<p style="text-indent: 20px; font-size: 18px ">
+If you only want to utilizate and utilize the framework, you should follow this steps:
+</p>
+<ol>
+    <b><li style="font-size: 18px"> Clone the repository:</li></b>
+    <p style="font-size: 18px">git clone https://github.com/JCARNEIROX/GridFlexPy.git</p>
+    <b><li style="font-size: 18px"> Create an evniroment, if you don't have anyone in your computer:</li></b>
+    <p style="font-size: 18px"> cd seu_repositorio</p>
+    <p style="font-size: 18px">python3 -m venv nome_do_ambiente</p>
+    <b><li style="font-size: 18px"> Activate the enviroment:</li></b>
+    <b><ul style="font-size: 18px">On windows:</ul></b>
+        GridFlexPy\Scripts\activate
+    <b><ul style="font-size: 18px">On Linux:</ul></b>
+        source GridFlexPy/bin/activate
+    <b><li style="font-size: 18px">Install the dependencies from requirements.txt:</li></b>
+        pip install -r requirements.txt
+    <b><li style="font-size: 18px">Deactivate the enviroment when stop using:</li></b>
+        deactivate
+    
+
+</ol>
 
 <h3 style="font-size: 20px"> <b>5.License</b></h3>
 <p style="text-indent: 20px; font-size: 18px ">
