@@ -39,7 +39,6 @@ The interface usage is based on user input from an Excel spreadsheet containing 
 
 <li style="font-size: 20px"><b>Features</b></li>
 <p align = "left">
-
 <img src="img\directories.png"> 
 </p>
 
@@ -53,8 +52,11 @@ The first step for the user to utilize the framework is to adapt the data to be 
 As this is an open-source framework, the battery operation functions can be modified in the <a href = "modules\bess.py">bess.py</a> module, and additional functions can be created to operate the battery according to the user's specific metrics.
 </p>
 
-<li style="font-size: 20px"><b>Installation and Contribution</b></li> <p style="text-indent: 20px; font-size: 18px;"> Follow these steps to set up and use the framework or contribute to its development: </p> <h4 style="font-size: 18px"><b>Installation</b></h4> <ol style="font-size: 18px"> 
-<li><b>Clone the repository:</b></li> 
+<li style="font-size: 20px"><b>Installation and Contribution</b></li> 
+<p style="text-indent: 20px; font-size: 18px;"> Follow these steps to set up and use the framework or contribute to its development: </p> 
+<h4 style="font-size: 18px"><b>Installation</b></h4> 
+<ol style="font-size: 18px"><li>
+<b>Clone the repository:</b></li> 
 <pre><code>git clone https://github.com/JCARNEIROX/GridFlexPy.git</code></pre>
 
 <li><b>Navigate to the project directory:</b></li>
@@ -77,7 +79,10 @@ As this is an open-source framework, the battery operation functions can be modi
 <li><b>Deactivate the environment (when done):</b></li>
 <pre><code>deactivate</code></pre>
 
-</ol> <h4 style="font-size: 18px"><b>Contributing</b></h4> <p style="text-indent: 20px; font-size: 18px;"> Contributions to this framework are welcome! Please follow these guidelines: </p> <ol style="font-size: 18px"> 
+</ol> 
+<h4 style="font-size: 18px"><b>Contributing</b></h4> 
+<p style="text-indent: 20px; font-size: 18px;"> Contributions to this framework are welcome! Please follow these guidelines: </p> 
+<ol style="font-size: 18px"> 
 <li><b>Fork the repository:</b></li> 
 <pre><code>https://github.com/JCARNEIROX/GridFlexPy/fork</code></pre>
 
@@ -93,6 +98,7 @@ git commit -m "Description of the changes made"</code></pre>
 
 <li><b>Submit a pull request:</b></li>
 <p>Go to the original repository, navigate to the "Pull Requests" tab, and submit your changes for review.</p>
+</ol>
 
 <li style="font-size: 20px"> <b>License</b></li>
 <p style="text-indent: 20px; font-size: 18px ">
