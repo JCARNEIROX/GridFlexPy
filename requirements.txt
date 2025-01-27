@@ -4,12 +4,14 @@ contourpy==1.3.1
 cycler==0.12.1
 dss-python==0.15.7
 dss-python-backend==0.14.5
+et_xmlfile==2.0.0
 fonttools==4.55.6
 kiwisolver==1.4.8
 matplotlib==3.10.0
 networkx==3.4.2
 numpy==2.2.2
 opendssdirect.py==0.9.4
+openpyxl==3.1.5
 packaging==24.2
 pandas==2.2.3
 pillow==11.1.0
