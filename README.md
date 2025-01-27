@@ -94,12 +94,13 @@ git commit -m "Description of the changes made"</code></pre>
 <li><b>Submit a pull request:</b></li>
 <p>Go to the original repository, navigate to the "Pull Requests" tab, and submit your changes for review.</p>
 
-<li style="font-size: 20px"> <b>License</b></h3>
+<li style="font-size: 20px"> <b>License</b></li>
 <p style="text-indent: 20px; font-size: 18px ">
 This project is licensed by MIT License, see more in <a href="\LICENSE">LICENSE</a> file.
 </p>
 
-<li style="font-size: 20px"><b>Contacts</b></h3>
+<li style="font-size: 20px"><b>Contacts</b></li>
+
 <ul style="text-indent: 20px; font-size: 18px ">
 <b>Autor:</b> João Victor Gomes Carneiro</ul>
 <ul style="text-indent: 20px; font-size: 18px ">
@@ -108,15 +109,13 @@ This project is licensed by MIT License, see more in <a href="\LICENSE">LICENSE<
 <b>Linkedin:</b> <a href="https://www.linkedin.com/in/jvcarneiro/">jvcarneiro</a></ul>
 
 <hr>
+
 <ul style="text-indent: 20px; font-size: 18px ">
-<b>CoAutor:</b> Lucas Zenichi Terada
-</p>
-<p style="text-indent: 20px; font-size: 18px ">
-<b>Email:</b> l182775@dac.unicamp.br
-</p>
-<p style="text-indent: 20px; font-size: 18px ">
-<b>Linkedin:</b> <a href="https://www.linkedin.com/in/lucaszenichi/">lucaszenichi</a>
-</ul>
+<b>CoAutor:</b> Lucas Zenichi Terada</ul>
+<ul style="text-indent: 20px; font-size: 18px ">
+<b>Email:</b> l182775@dac.unicamp.br</ul>
+<ul style="text-indent: 20px; font-size: 18px ">
+<b>Linkedin:</b> <a href="https://www.linkedin.com/in/lucaszenichi/">lucaszenichi</a></ul>
 </ol>
 
 
