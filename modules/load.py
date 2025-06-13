@@ -94,8 +94,7 @@ def get_LoadPower(dss,timestep):
             load_power[0] += sum(powers[::2])  # Sum the active power
             load_power[1] += sum(powers[1::2])  # Sum the reactive
 
-    columns_power = ['Timestep','P(kW)','Q(kvar)']
-    load_line = pd.DataFrame([[timestep, round(load_power[0],4),round(load_power[1],4)]], columns=columns_power)
+    load_line = [timestep, round(load_power[0],4),round(load_power[1],4)]
     return load_line
 
 class Load:

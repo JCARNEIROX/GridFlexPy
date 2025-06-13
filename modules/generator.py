@@ -57,8 +57,7 @@ def get_GenPower(dss,timestep):
             gen_power[0] += dss.Generators.kW()  # Sum the active power
             gen_power[1] += dss.Generators.kvar()  # Sum reactive power
     
-    columns_power = ['Timestep','P(kW)','Q(kvar)']
-    gen_line = pd.DataFrame([[timestep, round(gen_power[0],4),round(gen_power[1],4)]], columns=columns_power)
+    gen_line = [timestep, round(gen_power[0],4),round(gen_power[1],4)]
     
     return gen_line
             
