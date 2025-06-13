@@ -147,7 +147,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                 print(demanddf_list[i])
 
             else:
-                if (i>2):
+                if (i>2) and (kind == 'Forecasting'):
 
                     demand_values = [d[1] for d in demanddf_list[i-3:i]]
                     demand_values.append(demand_prev[i+1])
