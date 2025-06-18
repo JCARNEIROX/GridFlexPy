@@ -18,17 +18,17 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         return self.fc(out[:, -1, :])
 
-def load_model(model_path):
+def load_model(model_path,n_future=1):
     # Use cuda if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load the model
-    model = LSTMModel(input_size=1, hidden_size=64,output_size=2).to(device)   # mesmo hidden_size!
+    model = LSTMModel(input_size=1, hidden_size=64,output_size=n_future).to(device)   # mesmo hidden_size!
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
     return model,device
 
-def predict_demand(model, scaler, device, demand_prev, i, window_size=151):
+def predict_demand(model, scaler, device, demand_prev, i, window_size):
     """
     Recebe:
       - model: LSTM treinada com output_size = n_future
