@@ -122,7 +122,7 @@ class Bess:
 def operate_bess(kind, i, interval, demand_prev,bess_list):
     if kind == "Smoothing":
         for bess in bess_list:
-            next_bess_power, soc, energy, state = smoothing_operation(i,interval,demand_prev,sigma=90,bess_object=bess)
+            next_bess_power, soc, energy, state = smoothing_operation(i,interval,demand_prev,sigma=117,bess_object=bess)
             bess.update_power(next_bess_power)
             bess.update_energy(energy)
             bess.update_soc(soc)
@@ -137,7 +137,7 @@ def operate_bess(kind, i, interval, demand_prev,bess_list):
     
     elif kind == "Forecasting":
         for bess in bess_list:
-            next_bess_power, soc, energy, state = forecast_operation(i,interval,demand_prev,sigma=90,bess_object=bess)
+            next_bess_power, soc, energy, state = forecast_operation(i,interval,demand_prev,sigma=117,bess_object=bess)
             bess.update_power(next_bess_power)
             bess.update_energy(energy)
             bess.update_soc(soc)
@@ -160,7 +160,7 @@ def smoothing_operation(i, timestep, demand, sigma, bess_object):
 
     # get the past 6 values and next 6 values in demand starting from i
     # vec_gauss = demand[i-6:i+6]  # Vector for Gaussian filter
-    gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=11)[-1]  # Value used to define BESS power
+    gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=25)[-1]  # Value used to define BESS power
 
     # Define the next BESS power based on actual demand and Gaussian value
     PBessSeg = (actual_demand - gauss_value)
@@ -275,7 +275,7 @@ def forecast_operation(i,timestep, demand, sigma, bess_object):
     
     # get the past 6 values and next 6 values in demand starting from i
     vec_gauss = demand
-    gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=11)[-1]  # Value used to define BESS power
+    gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=25)[-1]  # Value used to define BESS power
 
     # Define the next BESS power based on actual demand and Gaussian value
     PBessSeg = (actual_demand - gauss_value)

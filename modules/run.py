@@ -30,10 +30,10 @@ path_generators = os.getcwd() + '/data/generators_profiles/'
 path_forecast = os.getcwd() + '/data/forecasts/'
 
 
-def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
+def run(config:dict):
         
     # Read the file and
-    file_contents = read_file_xlsx(path_xlsx+name_spreadsheet)
+    file_contents = read_file_xlsx(path_xlsx+config['name_spreadsheet'])
 
     # Get the content of each page of the spreadsheet
     general_informations = file_contents['General']
@@ -52,7 +52,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     
 
     #Run the power flow
-    file_dss = path_dss + name_dss 
+    file_dss = path_dss + config['name_dss'] 
     date_ini = general_informations.start_date
     date_end = general_informations.end_date
     interval = general_informations.timestep
@@ -71,49 +71,43 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     time_range = pd.date_range(date_ini, date_end, freq=f"{interval}T").to_list()
 
     # If the kind of operation is different from NoOperation, the BESS will be operated
-    if kind == 'Forecasting':
+    if config['kind'] == 'Forecasting':
         #Load the model of prediction
-        scaler_load = joblib.load(f"{path_forecast}demand/" + "scaler_load_4in.pkl")
-        scaler_loss = joblib.load(f"{path_forecast}demand/" + "scaler_loss_4in.pkl")
-        scaler_pv = joblib.load(f"{path_forecast}demand/" + "scaler_pv_4in.pkl")
-        scaler_bess = joblib.load(f"{path_forecast}demand/" + "scaler_bess_4in.pkl")
-        scaler_demand = joblib.load(f"{path_forecast}demand/" + "scaler_target_4in.pkl")
+        scaler_load = joblib.load(f"{path_forecast}demand/" + f"scaler_load_in{config['in_feature']}_seq{config['seq_len']}_hd{config['hidden_size']}_bt{config['batch_size']}.pkl")
+        scaler_loss = joblib.load(f"{path_forecast}demand/" + f"scaler_loss_in{config['in_feature']}_seq{config['seq_len']}_hd{config['hidden_size']}_bt{config['batch_size']}.pkl")
+        scaler_pv = joblib.load(f"{path_forecast}demand/" + f"scaler_pv_in{config['in_feature']}_seq{config['seq_len']}_hd{config['hidden_size']}_bt{config['batch_size']}.pkl")
+        scaler_demand = joblib.load(f"{path_forecast}demand/" + f"scaler_target_in{config['in_feature']}_seq{config['seq_len']}_hd{config['hidden_size']}_bt{config['batch_size']}.pkl")
         
-        path_model = f"{path_forecast}demand/" + "lstm_model_multifeature_4in.pth"
-        model = load_model(path_model,input_size=4,hidden_size=64,n_future=1)
-        #Load the scaler of BESS
+        path_model = f"{path_forecast}demand/" + f"lstm_model_multifeature_in{config['in_feature']}_seq{config['seq_len']}_hd{config['hidden_size']}_bt{config['batch_size']}.pth"
+        model = load_model(path_model,config)
         
         #Load the file of flux smoothing
-        # file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_Smoothing_bus{bus.split('_')[1]}_year_{name_dss.split('.')[0]}.csv')
-        file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{name_dss.split('.')[0]}.csv')
+        file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{config["name_dss"].split('.')[0]}.csv')
         file_demand['Timestep'] = pd.to_datetime(file_demand['Timestep'])
         
         
         # If bus is changed on a loop Update bus_node for BESS
         for bess in bess_list:
-            bess.update_bus(bus)
+            bess.update_bus(config['bess_bus'])
         
         print('Power Flow Simulation Started')
         # Start the counter to mensure the time of execution
         start = t.time()
         for i,timestep in enumerate(time_range):
-            # print(f"Time: {timestep},{i}")
 
-            if (i>161) and (kind == 'Forecasting'):
+            if (i>config['seq_len']-1) and (config['kind'] == 'Forecasting'):
                 load_vals = np.array([float(row[1]) for row in loaddf_list])
                 loss_vals = np.array([float(row[1]) for row in lossesdf_list])
                 pv_vals = np.array([float(row[1]) for row in generationdf_list])
-                bess_vals = np.array([float(row[2]) for row in bess_power_list])
-                scalers= (scaler_load,scaler_loss,scaler_pv,scaler_bess,scaler_demand)
-                # scalers= (scaler_load,scaler_loss,scaler_pv,scaler_demand)
-                next_demand = predict_demand_multi(model,scalers,load_vals,loss_vals,pv_vals,bess_vals,i,162)
+                scalers= (scaler_load,scaler_loss,scaler_pv,scaler_demand)
+                next_demand = predict_demand_multi(model,scalers,load_vals,loss_vals,pv_vals,i,window_size=config['seq_len'])
                 print(f"demand_prev: {next_demand}")
                 
-                demand_values = [d[1] for d in demanddf_list[i-3:i]] 
+                demand_values = [d[1] for d in demanddf_list[i-config['past_values']:i]] 
                 demand_values.append(next_demand[0])
 
                 # Update bess power
-                operate_bess(kind,i,interval,demand_values,bess_list)
+                operate_bess(config['kind'],i,interval,demand_values,bess_list)
 
                 # Run the power flow with the operation of the BESS
                 load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
@@ -130,45 +124,21 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
 
                 print(demanddf_list[i])
             else:
-                if (i>2):
-                    # Get the next demand on the dataframe no operation
-                    demand_prev = file_demand[file_demand['Timestep'] == timestep]['P(kW)'].values[0]
-                    # Run Power Flow with the gaussian filter
-                    demand_values = [d[1] for d in demanddf_list[i-3:i]]
-                    demand_values.append(demand_prev)
-                    # Update bess power
-                    operate_bess(kind,i,interval,demand_values,bess_list)
 
-                    # Run the power flow with the operation of the BESS
-                    load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
+                # Run the power flow without the operation of the BESS
+                load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
 
-                    # Append the new lines
-                    bus_power_list.extend(bus_power)
-                    loaddf_list.append(load)
-                    generationdf_list.append(generation)
-                    demanddf_list.append(demand_df)
-                    lossesdf_list.append(losses)
-                    branch_df_list.extend(branch_df)
-                    voltage_df_list.extend(bus_voltage)
-                    bess_power_list.extend(bess)
+                # Append the new lines
+                bus_power_list.extend(bus_power)
+                loaddf_list.append(load)
+                generationdf_list.append(generation)
+                demanddf_list.append(demand_df)
+                lossesdf_list.append(losses)
+                branch_df_list.extend(branch_df)
+                voltage_df_list.extend(bus_voltage)
+                bess_power_list.extend(bess)
 
-                    print(demanddf_list[i])
-                else:
-
-                    # Run the power flow without the operation of the BESS
-                    load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
-
-                    # Append the new lines
-                    bus_power_list.extend(bus_power)
-                    loaddf_list.append(load)
-                    generationdf_list.append(generation)
-                    demanddf_list.append(demand_df)
-                    lossesdf_list.append(losses)
-                    branch_df_list.extend(branch_df)
-                    voltage_df_list.extend(bus_voltage)
-                    bess_power_list.extend(bess)
-
-                    print(demanddf_list[i])
+                print(demanddf_list[i])
 
         # Print the time of execution of power flow
         print(f"Time of the power flow simulation: {round(t.time()-start,4)} seconds")
@@ -192,15 +162,15 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
 
         return bus_power_df1,load_df1,generation_df1,demand_df1,losses_df1,branch_df1,voltage_df1,bess_power_df,time_range
     
-    elif (kind == 'Smoothing') or (kind == 'Simple'):
+    elif (config['kind'] == 'Smoothing') or (config['kind'] == 'Simple'):
         
         #Load the file of flux smoothing
-        file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{name_dss.split('.')[0]}.csv')
+        file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{config["name_dss"].split('.')[0]}.csv')
         file_demand['Timestep'] = pd.to_datetime(file_demand['Timestep'])
         
         # If bus is changed on a loop Update bus_node for BESS
         for bess in bess_list:
-            bess.update_bus(bus)
+            bess.update_bus(config['bess_bus'])
         
         print('Power Flow Simulation Started')
         # Start the counter to mensure the time of execution
@@ -208,14 +178,14 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         for i,timestep in enumerate(time_range):
             # print(f"Time: {timestep},{i}")
 
-            if (i>2):
+            if (i>config['past_values']):
                 # Get the next demand on the dataframe no operation
                 demand_prev = file_demand[file_demand['Timestep'] == timestep]['P(kW)'].values[0]
                 # Run Power Flow with the gaussian filter
-                demand_values = [d[1] for d in demanddf_list[i-3:i]]
+                demand_values = [d[1] for d in demanddf_list[i-config['past_values']:i]]
                 demand_values.append(demand_prev)
                 # Update bess power
-                operate_bess(kind,i,interval,demand_values,bess_list)
+                operate_bess(config['kind'],i,interval,demand_values,bess_list)
 
                 # Run the power flow with the operation of the BESS
                 load,generation,bess,demand_df,losses,bus_power,bus_voltage,branch_df = power_flow_bess(timestep,file_dss,bess_list,generators_list,loads_list,lights_list,dss)
