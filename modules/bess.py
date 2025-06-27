@@ -271,30 +271,14 @@ def zero_demand(i,timestep, demand,bess_object):
 def forecast_operation(i,timestep, demand, sigma, bess_object):
 
     # Values of demand
-    if (i>161):
-        # # Values of demand
-        # prev_demand = demand[0]
-        actual_demand = demand[-1]
-        # next_demand = demand[2]
-        
-        # get the past 6 values and next 6 values in demand starting from i
-        vec_gauss = demand
-        gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=11)[-1]  # Value used to define BESS power
+    actual_demand = demand[-1]
+    
+    # get the past 6 values and next 6 values in demand starting from i
+    vec_gauss = demand
+    gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=11)[-1]  # Value used to define BESS power
 
-        # Define the next BESS power based on actual demand and Gaussian value
-        PBessSeg = (actual_demand - gauss_value)
-    else:
-        actual_demand = demand[-1]
-        
-        # # Gauss calculus
-        vec_gauss = demand  # Vector for Gaussian filter
-
-        # get the past 6 values and next 6 values in demand starting from i
-        # vec_gauss = demand[i-6:i+6]  # Vector for Gaussian filter
-        gauss_value = gaussian_filter1d(vec_gauss, sigma=sigma, radius=11)[-1]  # Value used to define BESS power
-
-        # Define the next BESS power based on actual demand and Gaussian value
-        PBessSeg = (actual_demand - gauss_value)
+    # Define the next BESS power based on actual demand and Gaussian value
+    PBessSeg = (actual_demand - gauss_value)
 
 
     # Actual state of charge of battery
@@ -375,7 +359,7 @@ def kalman_operation(i,timestep, demand, sigma, bess_object):
 
         kalman_filtered_demand = float(kf.x)
         PBessSeg = prediction - kalman_filtered_demand
-        
+
     else:
         actual_demand = demand[-1]
         

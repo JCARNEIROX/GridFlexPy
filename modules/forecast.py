@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
+ # Use cuda if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class LSTMModel(nn.Module):
     def __init__(self, input_size=1, hidden_size=64, num_layers=2, output_size=1):
         super().__init__()
@@ -18,17 +21,15 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         return self.fc(out[:, -1, :])
 
-def load_model(model_path,n_future=1):
-    # Use cuda if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+def load_model(model_path,input_size=4,hidden_size=64,n_future=1):
+   
     # Load the model
-    model = LSTMModel(input_size=1, hidden_size=64,output_size=n_future).to(device)   # mesmo hidden_size!
+    model = LSTMModel(input_size, hidden_size=hidden_size,output_size=n_future).to(device)   # mesmo hidden_size!
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
-    return model,device
+    return model
 
-def predict_demand(model, scaler, device, demand_prev, i, window_size):
+def predict_demand(model, scaler, demand_prev, i, window_size):
     """
     Recebe:
       - model: LSTM treinada com output_size = n_future
@@ -42,7 +43,8 @@ def predict_demand(model, scaler, device, demand_prev, i, window_size):
       - Um array de tamanho n_future com [demand(t), demand(t+1), …]
     """
     # 1) Extrai apenas os valores numéricos (coluna P(kW)) de demand_prev
-    p_vals = np.array([float(row[1]) for row in demand_prev])
+    # p_vals = np.array([float(row[1]) for row in demand_prev])
+    p_vals = demand_prev
 
     # 2) Seleciona a janela de window_size pontos: de (i-window_size+1) até i (inclusive)
     window = p_vals[i - (window_size - 1) : i + 1]  # shape: (window_size,)
@@ -72,4 +74,43 @@ def predict_demand(model, scaler, device, demand_prev, i, window_size):
     # 7) Retorna como vetor 1D com n_future valores
     return y_pred_desnorm[0]  # array de tamanho n_future
 
+def predict_demand_multi(model, scalers, load_prev, loss_prev,pv_prev, bess_prev,i, window_size):
+    """
+    Usa o modelo multifeature treinado para prever demanda a partir de:
+      - janelas de tamanho window_size das séries: load, loss, pv, bess
+    Retorna um array 1D de tamanho n_future com o(s) próximo(s) valor(es) de demanda.
+    """
+    # desempacota scalers
+    scaler_load, scaler_loss, scaler_pv, scaler_bess, scaler_target = scalers
+
+    # extrai as janelas de cada série: último window_size valores até i
+    start = i - window_size + 1
+    load_w = np.array(load_prev[start:i+1], dtype=float)
+    loss_w = np.array(loss_prev[start:i+1], dtype=float)
+    pv_w   = np.array(pv_prev[start:i+1],   dtype=float)
+    bess_w = np.array(bess_prev[start:i+1], dtype=float)
+
+    # aplica cada scaler individualmente
+    load_s = scaler_load.transform(load_w.reshape(-1,1)).flatten()
+    loss_s = scaler_loss.transform(loss_w.reshape(-1,1)).flatten()
+    pv_s   = scaler_pv.transform(pv_w.reshape(-1,1)).flatten()
+    bess_s = scaler_bess.transform(bess_w.reshape(-1,1)).flatten()
+
+    # monta matriz de features: shape (window_size, 4)
+    X_window = np.stack([load_s, loss_s, pv_s, bess_s], axis=1)
+
+    # converte para tensor shape (1, window_size, 4)
+    x = torch.tensor(X_window, dtype=torch.float32)
+    x = x.unsqueeze(0).to(device)
+
+    # predição sem gradiente
+    model.eval()
+    with torch.no_grad():
+        y_scaled = model(x).cpu().numpy()  # shape (1, n_future)
+
+    # desnormaliza a saída
+    y_des = scaler_target.inverse_transform(y_scaled)  # shape (1, n_future)
+
+    # retorna vetor 1D
+    return y_des.flatten()
 

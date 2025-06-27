@@ -11,17 +11,17 @@ path_generators = os.getcwd() + '/data/generators_profiles/'; os.makedirs(path_g
 
 if __name__ == '__main__':
 
-
     # General informations
     name_spreadsheet = 'sheet_IEEE13Node.xlsx' # Name of your spreadsheet with parameters of the system in directory data/spreadsheets
     name_dss = 'CondominioDosIpes.dss' # Name of your main dss_file in directory data/dss_files
-    kind = 'Forecasting' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing', 'Forecasting'
-    bess_bus = 'bus_001'
+    kind = 'Smoothing' # Kind of operation of the Batery Energy Storage System (BESS) in the power flow. Options: 'NoOperation', 'Simple', 'Smoothing', 'Forecasting'
+    bess_bus = 'bus_013'
 
     # Save the results in a csv file
     if not kind == 'NoOperation':
         print(f'Running power flow for BESS in bus {bess_bus} with kind of operation {kind}')
         # Run the power flow
+        # bus_power,load_df,generation_df,demand_df_smoothing,demand_df_noop,losses_df,branch_df,bus_voltage_df,bess_powers = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
         bus_power,load_df,generation_df,demand_df,losses_df,branch_df,bus_voltage_df,bess_powers,time = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
 
         # Save the results in a csv file
@@ -29,15 +29,18 @@ if __name__ == '__main__':
         save_csv(load_df,f'Load_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'load/')
         save_csv(generation_df,f'Generation_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'generation/')
         save_csv(demand_df,f'Demand_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'demand/')
+        # save_csv(demand_df_smoothing,f'Demand_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}_smooth',output_csv + 'demand/')
+        # save_csv(demand_df_noop,f'Demand_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}_NoOp',output_csv + 'demand/')
         save_csv(losses_df,f'Losses_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'losses/')
         save_csv(branch_df,f'BranchFlow_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'branch_flows/')
         save_csv(bus_voltage_df,f'BusVoltage_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'bus_voltage/')
         save_csv(bess_powers,f'BessPowers_{kind}_bus{bess_bus.split('_')[1]}_year_{name_dss.split('.')[0]}',output_csv + 'bess/')
 
+
     else:
         print(f'Running power flow kind of operation {kind}')
         # Run the power flow
-        bus_power,load_df,generation_df,demand_df,losses_df,branch_df,bus_voltage_df,time = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
+        bus_power,load_df,generation_df,demand_df,losses_df,branch_df,bus_voltage_df = run(name_spreadsheet,name_dss,bess_bus,kind=kind)
 
         # Save the results in a csv file
         save_csv(bus_power,f'BusPowers_{kind}_year_{name_dss.split('.')[0]}',output_csv + 'bus_power/')

@@ -5,7 +5,8 @@ from modules import construct_bess,operate_bess
 from modules import construct_generators
 from modules import construct_loads,construct_lights
 from modules import power_flow,power_flow_bess
-from modules.forecast import load_model,predict_demand
+from modules.forecast import load_model,predict_demand,predict_demand_multi
+from scipy.ndimage import gaussian_filter1d
 
 #Built-in libraries
 import time as t
@@ -72,14 +73,21 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
     # If the kind of operation is different from NoOperation, the BESS will be operated
     if kind == 'Forecasting':
         #Load the model of prediction
-        scaler = joblib.load(f"{path_forecast}demand/" + "scaler_demanda_smoothing.pkl")
-        model_path = f"{path_forecast}demand/" + "lstm_model_smoothing.pth"
-        model,device = load_model(model_path)
-
+        scaler_load = joblib.load(f"{path_forecast}demand/" + "scaler_load_4in.pkl")
+        scaler_loss = joblib.load(f"{path_forecast}demand/" + "scaler_loss_4in.pkl")
+        scaler_pv = joblib.load(f"{path_forecast}demand/" + "scaler_pv_4in.pkl")
+        scaler_bess = joblib.load(f"{path_forecast}demand/" + "scaler_bess_4in.pkl")
+        scaler_demand = joblib.load(f"{path_forecast}demand/" + "scaler_target_4in.pkl")
+        
+        path_model = f"{path_forecast}demand/" + "lstm_model_multifeature_4in.pth"
+        model = load_model(path_model,input_size=4,hidden_size=64,n_future=1)
+        #Load the scaler of BESS
+        
         #Load the file of flux smoothing
         # file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_Smoothing_bus{bus.split('_')[1]}_year_{name_dss.split('.')[0]}.csv')
         file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{name_dss.split('.')[0]}.csv')
-        demand_prev = file_demand["P(kW)"].values
+        file_demand['Timestep'] = pd.to_datetime(file_demand['Timestep'])
+        
         
         # If bus is changed on a loop Update bus_node for BESS
         for bess in bess_list:
@@ -92,11 +100,16 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
             # print(f"Time: {timestep},{i}")
 
             if (i>161) and (kind == 'Forecasting'):
-                next_demand = predict_demand(model,scaler,device,demanddf_list,i,162)
+                load_vals = np.array([float(row[1]) for row in loaddf_list])
+                loss_vals = np.array([float(row[1]) for row in lossesdf_list])
+                pv_vals = np.array([float(row[1]) for row in generationdf_list])
+                bess_vals = np.array([float(row[2]) for row in bess_power_list])
+                scalers= (scaler_load,scaler_loss,scaler_pv,scaler_bess,scaler_demand)
+                # scalers= (scaler_load,scaler_loss,scaler_pv,scaler_demand)
+                next_demand = predict_demand_multi(model,scalers,load_vals,loss_vals,pv_vals,bess_vals,i,162)
                 print(f"demand_prev: {next_demand}")
                 
-                # demand_prev =  [demanddf_list[i-1][1]] + list(next_demand)
-                demand_values = [d[1] for d in demanddf_list[i-3:i]]
+                demand_values = [d[1] for d in demanddf_list[i-3:i]] 
                 demand_values.append(next_demand[0])
 
                 # Update bess power
@@ -118,9 +131,12 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
                 print(demanddf_list[i])
             else:
                 if (i>2):
-                    # Run Power Flow with the gaussia
+                    # Get the next demand on the dataframe no operation
+                    next_timestep = time_range[i]+ pd.Timedelta(minutes=interval)
+                    demand_prev = file_demand[file_demand['Timestep'] == next_timestep]['P(kW)'].values[0]
+                    # Run Power Flow with the gaussian filter
                     demand_values = [d[1] for d in demanddf_list[i-3:i]]
-                    demand_values.append(demand_prev[i+1])
+                    demand_values.append(demand_prev)
                     # Update bess power
                     operate_bess(kind,i,interval,demand_values,bess_list)
 
@@ -181,7 +197,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
         
         #Load the file of flux smoothing
         file_demand = pd.read_csv(f"{path_forecast}demand/" + f'Demand_NoOperation_year_{name_dss.split('.')[0]}.csv')
-        demand_prev = file_demand["P(kW)"].values
+        file_demand['Timestep'] = pd.to_datetime(file_demand['Timestep'])
         
         # If bus is changed on a loop Update bus_node for BESS
         for bess in bess_list:
@@ -194,9 +210,12 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
             # print(f"Time: {timestep},{i}")
 
             if (i>2):
-
+                # Get the next demand on the dataframe no operation
+                next_timestep = time_range[i]+ pd.Timedelta(minutes=interval)
+                demand_prev = file_demand[file_demand['Timestep'] == next_timestep]['P(kW)'].values[0]
+                # Run Power Flow with the gaussian filter
                 demand_values = [d[1] for d in demanddf_list[i-3:i]]
-                demand_values.append(demand_prev[i+1])
+                demand_values.append(demand_prev)
                 # Update bess power
                 operate_bess(kind,i,interval,demand_values,bess_list)
 
