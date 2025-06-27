@@ -132,8 +132,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
             else:
                 if (i>2):
                     # Get the next demand on the dataframe no operation
-                    next_timestep = time_range[i]+ pd.Timedelta(minutes=interval)
-                    demand_prev = file_demand[file_demand['Timestep'] == next_timestep]['P(kW)'].values[0]
+                    demand_prev = file_demand[file_demand['Timestep'] == timestep]['P(kW)'].values[0]
                     # Run Power Flow with the gaussian filter
                     demand_values = [d[1] for d in demanddf_list[i-3:i]]
                     demand_values.append(demand_prev)
@@ -211,8 +210,7 @@ def run(name_spreadsheet,name_dss,bus,kind='NoOperation'):
 
             if (i>2):
                 # Get the next demand on the dataframe no operation
-                next_timestep = time_range[i]+ pd.Timedelta(minutes=interval)
-                demand_prev = file_demand[file_demand['Timestep'] == next_timestep]['P(kW)'].values[0]
+                demand_prev = file_demand[file_demand['Timestep'] == timestep]['P(kW)'].values[0]
                 # Run Power Flow with the gaussian filter
                 demand_values = [d[1] for d in demanddf_list[i-3:i]]
                 demand_values.append(demand_prev)
