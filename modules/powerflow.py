@@ -1,4 +1,3 @@
-import pandas as pd
 import os
 from modules import add_gd,get_GenPower
 from modules import add_bat, get_BessPower
@@ -18,7 +17,7 @@ def power_flow_bess(timestep,opendssmodel,batteries,generators,loads,light_list,
 
     #Clean the prompt comand of the OpenDSS
     dss.Basic.ClearAll()
-    dss.Basic.Start(0)
+    dss.Basic.ClearAll()
     dss.Command(f"Compile {opendssmodel}")
     buses = dss.Circuit.AllBusNames()
 

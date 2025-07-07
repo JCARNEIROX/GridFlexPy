@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
 
  # Use cuda if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# Simplified LSTM model for time series forecasting
 # class LSTMModel(nn.Module):
 #     def __init__(self, input_size=1, hidden_size=64, num_layers=2, output_size=1):
 #         super().__init__()

@@ -1,7 +1,6 @@
 from scipy.ndimage import gaussian_filter1d
 from filterpy.kalman import KalmanFilter
 import numpy as np
-import pandas as pd
 import os
 
 # Input and output paths    
@@ -35,7 +34,7 @@ def add_bat(Bess):
     
     return new_bat
 
-
+# Construct the BESS objects from the batteries informations
 def construct_bess(batteries):
 
     ids = batteries['Id'].values
@@ -52,6 +51,7 @@ def construct_bess(batteries):
 
     return list_bess_objects
 
+# Get the BESS power from the OpenDSS simulation
 def get_BessPower(dss,timestep):
 
     batteries = dss.Storages.AllNames()

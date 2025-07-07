@@ -5,8 +5,7 @@ from modules import construct_bess,operate_bess
 from modules import construct_generators
 from modules import construct_loads,construct_lights
 from modules import power_flow,power_flow_bess
-from modules.forecast import load_model,predict_demand,predict_demand_multi
-from scipy.ndimage import gaussian_filter1d
+from modules.forecast import load_model,predict_demand_multi
 
 #Built-in libraries
 import time as t
@@ -45,7 +44,6 @@ def run(config:dict):
     # Get the general informations
     general_informations = get_informations(general_informations)
     bess_list = construct_bess(batteries)
-    
     generators_list = construct_generators(generators)
     loads_list = construct_loads(loads)
     lights_list = construct_lights(public_ilumination)
@@ -101,7 +99,7 @@ def run(config:dict):
                 pv_vals = np.array([float(row[1]) for row in generationdf_list])
                 scalers= (scaler_load,scaler_loss,scaler_pv,scaler_demand)
                 next_demand = predict_demand_multi(model,scalers,load_vals,loss_vals,pv_vals,i,window_size=config['seq_len'])
-                print(f"demand_prev: {next_demand}")
+                # print(f"demand_prev: {next_demand}") # Debugging line, print the next demand
                 
                 demand_values = [d[1] for d in demanddf_list[i-config['past_values']:i]] 
                 demand_values.append(next_demand[0])

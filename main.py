@@ -14,7 +14,7 @@ if __name__ == '__main__':
     config ={
         'name_spreadsheet': 'sheet_IEEE13Node.xlsx',
         'name_dss': 'CondominioDosIpes.dss',
-        'kind': 'Forecasting',  # Options: 'NoOperation', 'Simple', 'Smoothing', 'Forecasting'
+        'kind': 'Smoothing',  # Options: 'NoOperation', 'Simple', 'Smoothing', 'Forecasting'
         'bess_bus': 'bus_013',
         'seq_len': 162,  # Tamanho da janela de entrada
         'past_values': 3,  # Past values to start operation in 'Smoothing' or 'Simple' mode
